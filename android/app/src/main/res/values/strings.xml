@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">dhammaapp</string>
+    <string name="app_name">တရားတော်များ</string>
+    <string name="splash_credit">Developed by OIT</string>
 </resources>

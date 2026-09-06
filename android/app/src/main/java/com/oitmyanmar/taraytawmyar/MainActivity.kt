@@ -1,4 +1,4 @@
-package com.dhammaapp
+package com.oitmyanmar.taraytawmyar
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
