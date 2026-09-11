@@ -1,18 +1,22 @@
 import React from 'react';
 import {Pressable, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {myanmarFont} from '../theme';
 
 export function ScreenHeader({title, subtitle, right, onBack}) {
   const insets = useSafeAreaInsets();
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
 
   return (
     <View style={[styles.wrap, {paddingTop: insets.top + 12}]}>
       {onBack ? (
         <Pressable onPress={onBack} hitSlop={12} accessibilityLabel="နောက်သို့">
-          <Text style={styles.back}>‹ နောက်</Text>
+          <View style={styles.backRow}>
+            <Icon name="chevron-left" size={22} color={colors.ink} />
+            <Text style={styles.back}>နောက်</Text>
+          </View>
         </Pressable>
       ) : null}
       <View style={styles.row}>
@@ -33,12 +37,17 @@ function createStyles(colors) {
       paddingBottom: 12,
       backgroundColor: colors.bg,
     },
+    backRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginLeft: -6,
+      marginBottom: 4,
+    },
     back: {
       fontFamily: myanmarFont,
       fontSize: 16,
       color: colors.ink,
       fontWeight: '600',
-      marginBottom: 4,
     },
     row: {
       flexDirection: 'row',

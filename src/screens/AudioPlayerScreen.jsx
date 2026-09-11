@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Animated, Easing, Pressable, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import SoundPlayer from 'react-native-sound-player';
-import {RepeatIcon} from '../components/PlayerIcons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {AddToPlaylistModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
 import {getAdjacentAudio, getAudioById, getPlaylistQueue} from '../data/audios';
@@ -203,7 +203,10 @@ export function AudioPlayerScreen({audioId}) {
     return (
       <View style={[styles.screen, {paddingTop: insets.top + 12}]}>
         <Pressable onPress={goBack} hitSlop={12} accessibilityLabel="နောက်သို့">
-          <Text style={styles.back}>‹ နောက်</Text>
+          <View style={styles.backRow}>
+            <Icon name="chevron-left" size={22} color={colors.ink} />
+            <Text style={styles.back}>နောက်</Text>
+          </View>
         </Pressable>
         <Text style={styles.missingText}>အသံဖိုင် မတွေ့ပါ။</Text>
       </View>
@@ -277,7 +280,10 @@ export function AudioPlayerScreen({audioId}) {
       ]}>
       <View style={styles.topBar}>
         <Pressable onPress={goBack} hitSlop={12} accessibilityLabel="နောက်သို့">
-          <Text style={styles.back}>‹ နောက်</Text>
+          <View style={styles.backRow}>
+            <Icon name="chevron-left" size={22} color={colors.ink} />
+            <Text style={styles.back}>နောက်</Text>
+          </View>
         </Pressable>
       </View>
 
@@ -323,10 +329,10 @@ export function AudioPlayerScreen({audioId}) {
             accessibilityRole="button"
             accessibilityState={{selected: loop}}
             accessibilityLabel={loop ? 'Loop ပိတ်ရန်' : 'Loop ဖွင့်ရန်'}>
-            <RepeatIcon color={loop ? colors.onAccent : colors.ink} size={18} />
+            <Icon name="repeat" size={18} color={loop ? colors.onAccent : colors.ink} />
           </Pressable>
           <Pressable onPress={() => goAdjacent(-1)} hitSlop={8} accessibilityLabel="ယခင်အသံ">
-            <Text style={styles.skip}>⏮</Text>
+            <Icon name="skip-previous" size={22} color={colors.ink} />
           </Pressable>
           <Pressable onPress={() => skipBy(-10)} hitSlop={8} accessibilityLabel="နောက်သို့ ၁၀ စက္ကန့်">
             <Text style={styles.skipSmall}>-10</Text>
@@ -336,20 +342,25 @@ export function AudioPlayerScreen({audioId}) {
             style={[styles.playButton, !hasFile && styles.playDisabled]}
             accessibilityRole="button"
             accessibilityLabel={playing ? 'ခဏရပ်ရန်' : 'ဖွင့်ရန်'}>
-            <Text style={styles.playIcon}>{playing ? '❚❚' : '▶'}</Text>
+            <Icon
+              name={playing ? 'pause' : 'play'}
+              size={26}
+              color={colors.onAccent}
+              style={playing ? undefined : styles.playIcon}
+            />
           </Pressable>
           <Pressable onPress={() => skipBy(10)} hitSlop={8} accessibilityLabel="ရှေ့သို့ ၁၀ စက္ကန့်">
             <Text style={styles.skipSmall}>+10</Text>
           </Pressable>
           <Pressable onPress={() => goAdjacent(1)} hitSlop={8} accessibilityLabel="ရှေ့အသံ">
-            <Text style={styles.skip}>⏭</Text>
+            <Icon name="skip-next" size={22} color={colors.ink} />
           </Pressable>
           <Pressable
             onPress={() => setAdding(true)}
             style={styles.toolButton}
             accessibilityRole="button"
             accessibilityLabel="Playlist ထည့်ရန်">
-            <Text style={styles.addIcon}>+</Text>
+            <Icon name="plus" size={20} color={colors.ink} />
           </Pressable>
         </View>
       </View>
@@ -374,6 +385,11 @@ function createStyles(colors) {
       alignItems: 'center',
       minHeight: 36,
     },
+    backRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginLeft: -6,
+    },
     back: {
       fontFamily: myanmarFont,
       fontSize: 16,
@@ -392,11 +408,6 @@ function createStyles(colors) {
     toolButtonOn: {
       backgroundColor: colors.ink,
       borderColor: colors.ink,
-    },
-    addIcon: {
-      fontSize: 20,
-      color: colors.ink,
-      lineHeight: 22,
     },
     body: {
       flex: 1,
@@ -474,10 +485,6 @@ function createStyles(colors) {
       alignItems: 'center',
       justifyContent: 'space-between',
     },
-    skip: {
-      fontSize: 20,
-      color: colors.ink,
-    },
     skipSmall: {
       fontSize: 13,
       fontWeight: '700',
@@ -497,8 +504,7 @@ function createStyles(colors) {
       opacity: 0.4,
     },
     playIcon: {
-      color: colors.onAccent,
-      fontSize: 24,
+      marginLeft: 3,
     },
     missingText: {
       marginTop: 24,

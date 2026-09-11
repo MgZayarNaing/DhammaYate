@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Modal, Pressable, ScrollView, Text, TextInput, View} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {dhammaAudios} from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
@@ -152,7 +153,7 @@ export function AddTracksModal({visible, playlistId, onClose}) {
 
 export function AddToPlaylistModal({visible, audioId, onClose}) {
   const {settings, addToPlaylist} = useApp();
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
   const [creating, setCreating] = useState(false);
   const playlists = settings.playlists ?? [];
 
@@ -176,7 +177,10 @@ export function AddToPlaylistModal({visible, audioId, onClose}) {
             <Pressable
               onPress={() => setCreating(true)}
               style={({pressed}) => [styles.row, pressed && styles.pressed]}>
-              <Text style={styles.rowTitle}>+ Playlist အသစ်</Text>
+              <View style={styles.rowTitleWrap}>
+                <Icon name="plus" size={16} color={colors.ink} />
+                <Text style={styles.rowTitle}>Playlist အသစ်</Text>
+              </View>
             </Pressable>
             <ScrollView style={styles.list}>
               {playlists.length === 0 ? (
@@ -328,6 +332,12 @@ function createStyles(colors) {
       fontFamily: myanmarFont,
       fontSize: 16,
       color: colors.ink,
+    },
+    rowTitleWrap: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
     },
     rowMeta: {
       fontFamily: myanmarFont,

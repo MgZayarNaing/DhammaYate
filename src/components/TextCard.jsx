@@ -1,11 +1,12 @@
 import React from 'react';
-import {Pressable, Text} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {categoryLabel} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {myanmarFont} from '../theme';
 
 export function TextCard({text, onPress, bookmarked}) {
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
 
   return (
     <Pressable
@@ -18,7 +19,12 @@ export function TextCard({text, onPress, bookmarked}) {
       <Text style={styles.subtitle} numberOfLines={2}>
         {text.subtitle}
       </Text>
-      {bookmarked ? <Text style={styles.star}>★ မှတ်သားထားသည်</Text> : null}
+      {bookmarked ? (
+        <View style={styles.starRow}>
+          <Icon name="bookmark-check" size={14} color={colors.blue} />
+          <Text style={styles.star}>မှတ်သားထားသည်</Text>
+        </View>
+      ) : null}
     </Pressable>
   );
 }
@@ -56,8 +62,13 @@ function createStyles(colors) {
       color: colors.cardMuted,
       lineHeight: 24,
     },
-    star: {
+    starRow: {
       marginTop: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    star: {
       fontFamily: myanmarFont,
       fontSize: 12,
       color: colors.blue,

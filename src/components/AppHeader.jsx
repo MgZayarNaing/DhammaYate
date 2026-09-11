@@ -1,6 +1,7 @@
 import React from 'react';
 import {Pressable, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {APP_NAME} from '../data/appLinks';
 import {getAudioById} from '../data/audios';
@@ -75,7 +76,7 @@ function headerState(route, openTab, goBack, playlists) {
 export function AppHeader() {
   const insets = useSafeAreaInsets();
   const {route, goBack, openTab, settings} = useApp();
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
   const header = headerState(route, openTab, goBack, settings.playlists);
 
   return (
@@ -89,7 +90,10 @@ export function AppHeader() {
             style={styles.side}
             hitSlop={12}
             accessibilityLabel="နောက်သို့">
-            <Text style={styles.back}>‹ နောက်</Text>
+            <View style={styles.backRow}>
+              <Icon name="chevron-left" size={22} color={colors.ink} />
+              <Text style={styles.back}>နောက်</Text>
+            </View>
           </Pressable>
           <Text style={styles.title} numberOfLines={1}>
             {header.title}
@@ -125,6 +129,11 @@ function createStyles(colors) {
     },
     side: {
       width: 72,
+    },
+    backRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginLeft: -6,
     },
     back: {
       fontFamily: myanmarFont,

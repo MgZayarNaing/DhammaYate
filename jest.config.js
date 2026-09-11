@@ -6,4 +6,8 @@ module.exports = {
     '^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp|wav|mp3|m4a)$':
       '@react-native/jest-preset/jest/assetFileTransformer.js',
   },
+  moduleNameMapper: {
+    'react-native-vector-icons/(.*)':
+      '<rootDir>/__mocks__/react-native-vector-icons/$1.js',
+  },
 };

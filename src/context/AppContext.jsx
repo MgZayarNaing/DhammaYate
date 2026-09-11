@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import {getBookById} from '../data/books';
 import {TAB_IDS} from '../tabs';
 import {loadSettings, saveSettings} from '../storage';
 import {FONT_SIZES, getColors} from '../theme';
@@ -49,6 +50,11 @@ export function AppProvider({children}) {
   }, []);
 
   const openBook = useCallback((bookId, from = 'home') => {
+    const book = getBookById(bookId);
+    if (book?.chapters.length === 1) {
+      setRoute({name: 'reader', textId: book.chapters[0].id, from});
+      return;
+    }
     setRoute({name: 'book', bookId, from});
   }, []);
 

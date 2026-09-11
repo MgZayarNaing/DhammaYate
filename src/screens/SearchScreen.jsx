@@ -1,5 +1,6 @@
 import React, {useMemo, useState} from 'react';
 import {Pressable, ScrollView, Text, TextInput, View} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {searchCatalog} from '../data/search';
 import {useThemedStyles} from '../hooks/useThemedStyles';
@@ -49,7 +50,9 @@ export function SearchScreen() {
                   <ResultRow
                     key={`book-${item.book.id}`}
                     title={item.book.title}
+                    showChevron={item.book.chapterIds.length > 1}
                     styles={styles}
+                    colors={colors}
                     onPress={() => onSelect(item)}
                   />
                 );
@@ -61,6 +64,7 @@ export function SearchScreen() {
                     title={item.chapter.title}
                     meta={item.book.title}
                     styles={styles}
+                    colors={colors}
                     onPress={() => onSelect(item)}
                   />
                 );
@@ -68,8 +72,9 @@ export function SearchScreen() {
               return (
                 <ResultRow
                   key={`audio-${item.audio.id}`}
-                    title={item.audio.title}
-                    styles={styles}
+                  title={item.audio.title}
+                  styles={styles}
+                  colors={colors}
                   onPress={() => onSelect(item)}
                 />
               );
@@ -81,7 +86,7 @@ export function SearchScreen() {
   );
 }
 
-function ResultRow({title, meta, styles, onPress}) {
+function ResultRow({title, meta, showChevron = true, styles, colors, onPress}) {
   return (
     <Pressable
       onPress={onPress}
@@ -92,7 +97,9 @@ function ResultRow({title, meta, styles, onPress}) {
         <Text style={styles.title}>{title}</Text>
         {meta ? <Text style={styles.meta}>{meta}</Text> : null}
       </View>
-      <Text style={styles.chevron}>›</Text>
+      {showChevron ? (
+        <Icon name="chevron-right" size={22} color={colors.ink} style={styles.chevron} />
+      ) : null}
     </Pressable>
   );
 }
@@ -154,9 +161,6 @@ function createStyles(colors) {
       lineHeight: 22,
     },
     chevron: {
-      fontSize: 26,
-      color: colors.ink,
-      lineHeight: 28,
       marginLeft: 8,
     },
     empty: {

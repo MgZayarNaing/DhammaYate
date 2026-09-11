@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {FlatList, Pressable, Text, View} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {AddTracksModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
 import {getAudioById} from '../data/audios';
@@ -8,7 +9,7 @@ import {myanmarFont} from '../theme';
 
 export function PlaylistScreen({playlistId}) {
   const {settings, openAudio, deletePlaylist, removeFromPlaylist, goBack} = useApp();
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
   const [adding, setAdding] = useState(false);
   const playlist = (settings.playlists ?? []).find(item => item.id === playlistId);
   const items = (playlist?.audioIds ?? []).map(id => getAudioById(id)).filter(Boolean);
@@ -40,7 +41,7 @@ export function PlaylistScreen({playlistId}) {
               disabled={items.length === 0}
               accessibilityRole="button"
               accessibilityLabel="အားလုံး ဖွင့်ရန်">
-              <Text style={styles.playAllIcon}>▶</Text>
+              <Icon name="play" size={16} color={colors.onAccent} style={styles.playAllIcon} />
               <Text style={styles.playAllText}>All</Text>
             </Pressable>
             <Pressable
@@ -48,7 +49,10 @@ export function PlaylistScreen({playlistId}) {
               style={styles.addButton}
               accessibilityRole="button"
               accessibilityLabel="အသံဖိုင် ထည့်ရန်">
-              <Text style={styles.addButtonText}>+ အသံဖိုင် ထည့်ရန်</Text>
+              <View style={styles.addButtonRow}>
+                <Icon name="plus" size={16} color={colors.ink} />
+                <Text style={styles.addButtonText}>အသံဖိုင် ထည့်ရန်</Text>
+              </View>
             </Pressable>
           </View>
         }
@@ -75,7 +79,7 @@ export function PlaylistScreen({playlistId}) {
               accessibilityRole="button"
               accessibilityLabel={item.title}>
               <View style={styles.playBadge}>
-                <Text style={styles.playIcon}>▶</Text>
+                <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
               </View>
               <Text style={styles.title}>{item.title}</Text>
             </Pressable>
@@ -83,7 +87,7 @@ export function PlaylistScreen({playlistId}) {
               onPress={() => removeFromPlaylist(playlist.id, item.id)}
               hitSlop={10}
               accessibilityLabel="ဖြုတ်ရန်">
-              <Text style={styles.remove}>−</Text>
+              <Icon name="minus" size={22} color={colors.ink} />
             </Pressable>
           </View>
         )}
@@ -124,6 +128,11 @@ function createStyles(colors) {
       borderColor: colors.line,
       backgroundColor: colors.card,
     },
+    addButtonRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
     addButtonText: {
       fontFamily: myanmarFont,
       fontSize: 15,
@@ -140,8 +149,6 @@ function createStyles(colors) {
       opacity: 0.4,
     },
     playAllIcon: {
-      color: colors.onAccent,
-      fontSize: 14,
       marginLeft: 2,
     },
     playAllText: {
@@ -175,8 +182,6 @@ function createStyles(colors) {
       marginRight: 12,
     },
     playIcon: {
-      color: colors.onAccent,
-      fontSize: 14,
       marginLeft: 2,
     },
     title: {
@@ -186,11 +191,6 @@ function createStyles(colors) {
       color: colors.ink,
       fontWeight: '700',
       lineHeight: 28,
-    },
-    remove: {
-      fontSize: 28,
-      color: colors.ink,
-      paddingHorizontal: 8,
     },
     pressed: {
       opacity: 0.75,

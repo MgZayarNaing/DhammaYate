@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {Pressable, ScrollView, Text, View} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CreatePlaylistModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
 import {dhammaAudios, getAudioById} from '../data/audios';
@@ -8,7 +9,7 @@ import {myanmarFont} from '../theme';
 
 export function AudioScreen() {
   const {openAudio, openPlaylist, settings} = useApp();
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
   const [creating, setCreating] = useState(false);
   const playlists = settings.playlists ?? [];
 
@@ -18,7 +19,10 @@ export function AudioScreen() {
         <View style={styles.sectionRow}>
           <Text style={styles.section}>Playlist</Text>
           <Pressable onPress={() => setCreating(true)} hitSlop={8} accessibilityLabel="Playlist အသစ်">
-            <Text style={styles.addLink}>+ အသစ်</Text>
+            <View style={styles.addLinkRow}>
+              <Icon name="plus" size={16} color={colors.ink} />
+              <Text style={styles.addLink}>အသစ်</Text>
+            </View>
           </Pressable>
         </View>
         {playlists.length === 0 ? (
@@ -39,7 +43,7 @@ export function AudioScreen() {
                   style={({pressed}) => [styles.playBadge, pressed && styles.pressed]}
                   accessibilityRole="button"
                   accessibilityLabel={`${playlist.name} All`}>
-                  <Text style={styles.playIcon}>▶</Text>
+                  <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
                 </Pressable>
                 <Pressable
                   onPress={() => openPlaylist(playlist.id)}
@@ -48,7 +52,7 @@ export function AudioScreen() {
                   accessibilityLabel={playlist.name}>
                   <Text style={styles.title}>{playlist.name}</Text>
                   <Text style={styles.meta}>{playlist.audioIds.length} ပုဒ်</Text>
-                  <Text style={styles.chevron}>›</Text>
+                  <Icon name="chevron-right" size={22} color={colors.ink} />
                 </Pressable>
               </View>
             ))}
@@ -65,7 +69,7 @@ export function AudioScreen() {
               accessibilityRole="button"
               accessibilityLabel={item.title}>
               <View style={styles.playBadge}>
-                <Text style={styles.playIcon}>▶</Text>
+                <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
               </View>
               <Text style={styles.title}>{item.title}</Text>
             </Pressable>
@@ -100,6 +104,11 @@ function createStyles(colors) {
       fontSize: 16,
       fontWeight: '700',
       color: colors.ink,
+    },
+    addLinkRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
     },
     addLink: {
       fontFamily: myanmarFont,
@@ -146,8 +155,6 @@ function createStyles(colors) {
       marginRight: 12,
     },
     playIcon: {
-      color: colors.onAccent,
-      fontSize: 14,
       marginLeft: 2,
     },
     title: {
@@ -163,11 +170,6 @@ function createStyles(colors) {
       fontSize: 13,
       color: colors.muted,
       marginRight: 8,
-    },
-    chevron: {
-      fontSize: 26,
-      color: colors.ink,
-      lineHeight: 28,
     },
   };
 }
