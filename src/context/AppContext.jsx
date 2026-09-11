@@ -49,9 +49,11 @@ export function AppProvider({children}) {
     setRoute({name: 'library', from});
   }, []);
 
-  const openBook = useCallback((bookId, from = 'home') => {
+  const openBook = useCallback((bookId, from = 'home', options = {}) => {
     const book = getBookById(bookId);
-    if (book?.chapters.length === 1) {
+    // Home skips the chapter list for single-chapter books; search always
+    // opens the chapter screen for "book" results (multi-chapter only).
+    if (!options.listChapters && book?.chapters.length === 1) {
       setRoute({name: 'reader', textId: book.chapters[0].id, from});
       return;
     }

@@ -14,20 +14,39 @@ export function searchCatalog(query) {
   const items = [];
 
   dhammaBooks.forEach(book => {
-    if (!q || matchesQuery([book.title, book.paliTitle, book.subtitle], q)) {
+    const isMultiChapter = book.chapterIds.length > 1;
+    const bookMatches =
+      !q || matchesQuery([book.title, book.paliTitle, book.subtitle], q);
+
+    // "Book" results are multi-chapter books → open chapter list.
+    if (bookMatches && isMultiChapter) {
       items.push({type: 'book', book});
     }
+
     if (!q) {
       return;
     }
+
     const full = getBookById(book.id);
     full?.chapters.forEach(chapter => {
-      if (
-        matchesQuery(
-          [chapter.title, chapter.paliTitle, chapter.subtitle, ...(chapter.paragraphs ?? [])],
-          q,
-        )
-      ) {
+      const chapterMatches = matchesQuery(
+        [
+          chapter.title,
+          chapter.paliTitle,
+          chapter.subtitle,
+          ...(chapter.paragraphs ?? []),
+        ],
+        q,
+      );
+      // Single-chapter books matching the book title surface as a chapter
+      // so tapping opens the reader, not a one-item chapter list.
+      const singleBookAsChapter =
+        !isMultiChapter &&
+        bookMatches &&
+        full.chapters.length === 1 &&
+        chapter.id === full.chapters[0].id;
+
+      if (chapterMatches || singleBookAsChapter) {
         items.push({type: 'chapter', book, chapter});
       }
     });
