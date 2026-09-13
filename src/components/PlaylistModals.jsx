@@ -262,8 +262,8 @@ function createStyles(colors) {
       borderColor: colors.line,
       borderRadius: 14,
       paddingHorizontal: 14,
-      paddingVertical: 12,
-      fontSize: 16,
+      paddingVertical: 10,
+      fontSize: 14,
       color: colors.ink,
       backgroundColor: colors.parchment,
     },
@@ -318,7 +318,7 @@ function createStyles(colors) {
       justifyContent: 'center',
     },
     checkOn: {
-      backgroundColor: colors.ink,
+      backgroundColor: colors.white,
       borderColor: colors.ink,
     },
     checkMark: {

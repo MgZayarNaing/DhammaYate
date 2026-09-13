@@ -4,6 +4,7 @@ import {
   Alert,
   Animated,
   Easing,
+  Image,
   Pressable,
   Text,
   View,
@@ -28,6 +29,15 @@ import {
 } from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {myanmarFont} from '../theme';
+
+const HERO_SIZE = 240;
+const LOGO_SIZE = 240;
+const RAY_SIZE = 120;
+
+const HEAD_CENTER_X = HERO_SIZE / 2;
+const HEAD_CENTER_Y = (HERO_SIZE - LOGO_SIZE) / 2 + LOGO_SIZE * 0.25;
+const RAY_TOP = HEAD_CENTER_Y - RAY_SIZE / 2;
+const RAY_LEFT = HEAD_CENTER_X - RAY_SIZE / 2;
 
 function formatTime(seconds) {
   const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
@@ -81,8 +91,10 @@ export function AudioPlayerScreen({audioId}) {
   const fromTabRef = useRef('audio');
   const playlistIdRef = useRef(route.playlistId);
   const queueRef = useRef([]);
-  const spin = useRef(new Animated.Value(0)).current;
-  const spinLoop = useRef(null);
+  const rayA = useRef(new Animated.Value(0)).current;
+  const rayB = useRef(new Animated.Value(0)).current;
+  const rayC = useRef(new Animated.Value(0)).current;
+  const rayLoop = useRef(null);
 
   const playlist = resolvePlaylist(route.playlistId, settings);
   const queue = getPlaylistQueue(playlist);
@@ -94,39 +106,67 @@ export function AudioPlayerScreen({audioId}) {
   playlistIdRef.current = route.playlistId;
   queueRef.current = queue;
 
-  const spinStyle = useMemo(
-    () => ({
+  const rayStyles = useMemo(() => {
+    const makeRing = value => ({
       transform: [
         {
-          rotate: spin.interpolate({
+          scale: value.interpolate({
             inputRange: [0, 1],
-            outputRange: ['0deg', '360deg'],
+            outputRange: [1, 1.45],
           }),
         },
       ],
-    }),
-    [spin],
-  );
+      opacity: value.interpolate({
+        inputRange: [0, 0.2, 1],
+        outputRange: [0.45, 0.3, 0],
+      }),
+    });
+    return [makeRing(rayA), makeRing(rayB), makeRing(rayC)];
+  }, [rayA, rayB, rayC]);
 
   useEffect(() => {
+    const rays = [rayA, rayB, rayC];
     if (playing) {
-      spinLoop.current = Animated.loop(
-        Animated.timing(spin, {
-          toValue: 1,
-          duration: 8000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
+      rays.forEach(value => value.setValue(0));
+      const animations = rays.map((value, index) =>
+        Animated.sequence([
+          Animated.delay(index * 600),
+          Animated.loop(
+            Animated.sequence([
+              Animated.timing(value, {
+                toValue: 1,
+                duration: 1800,
+                easing: Easing.out(Easing.ease),
+                useNativeDriver: true,
+              }),
+              Animated.timing(value, {
+                toValue: 0,
+                duration: 0,
+                useNativeDriver: true,
+              }),
+            ]),
+          ),
+        ]),
       );
-      spinLoop.current.start();
+      rayLoop.current = Animated.parallel(animations);
+      rayLoop.current.start();
       return () => {
-        spinLoop.current?.stop();
-        spin.setValue(0);
+        rayLoop.current?.stop();
       };
     }
-    spinLoop.current?.stop();
+    rayLoop.current?.stop();
+    Animated.parallel(
+      rays.map(value =>
+        Animated.timing(value, {
+          toValue: 0,
+          duration: 280,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ),
+    ).start();
     return undefined;
-  }, [playing, spin]);
+  }, [playing, rayA, rayB, rayC]);
 
   useEffect(() => {
     if (!audio?.file) {
@@ -409,9 +449,23 @@ export function AudioPlayerScreen({audioId}) {
           {index >= 0 ? `${index + 1} / ${queue.length}` : ''}
         </Text>
         <Text style={styles.title}>{audio.title}</Text>
-        <Animated.View style={[styles.disc, spinStyle]}>
-          <Text style={styles.discIcon}>☸</Text>
-        </Animated.View>
+        <View style={styles.hero}>
+          {rayStyles.map((ringStyle, ringIndex) => (
+            <Animated.View
+              key={`ray-${ringIndex}`}
+              pointerEvents="none"
+              style={[styles.rayRing, ringStyle, {borderColor: colors.ink}]}
+            />
+          ))}
+          <View style={styles.logoDisc}>
+            <Image
+              source={require('../assets/images/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+              accessibilityLabel="ဘုရား"
+            />
+          </View>
+        </View>
       </View>
 
       <View style={styles.footer}>
@@ -551,18 +605,37 @@ function createStyles(colors) {
       textAlign: 'center',
       paddingHorizontal: 8,
     },
-    disc: {
+    hero: {
       marginTop: 36,
-      width: 220,
-      height: 220,
-      borderRadius: 110,
-      backgroundColor: colors.blue,
+      width: HERO_SIZE,
+      height: HERO_SIZE,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    discIcon: {
-      fontSize: 64,
-      color: colors.onAccent,
+    rayRing: {
+      position: 'absolute',
+      top: RAY_TOP,
+      left: RAY_LEFT,
+      width: RAY_SIZE,
+      height: RAY_SIZE,
+      borderRadius: RAY_SIZE / 2,
+      borderWidth: 1,
+      borderColor: colors.ink,
+      backgroundColor: 'yellow',
+      opacity: 0,
+    },
+    logoDisc: {
+      width: LOGO_SIZE,
+      height: LOGO_SIZE,
+      borderRadius: LOGO_SIZE / 2,
+      overflow: 'hidden',
+      backgroundColor: 'transparent',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    logo: {
+      width: LOGO_SIZE,
+      height: LOGO_SIZE,
     },
     footer: {
       paddingBottom: 8,
