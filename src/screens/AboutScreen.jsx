@@ -1,7 +1,7 @@
 import React from 'react';
 import {ScrollView, Text, View} from 'react-native';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {APP_NAME} from '../data/appLinks';
+import {APP_NAME, APP_VERSION} from '../data/appLinks';
 import {myanmarFont} from '../theme';
 
 export function AboutScreen() {
@@ -11,6 +11,7 @@ export function AboutScreen() {
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.name}>{APP_NAME}</Text>
+        <Text style={styles.version}>Version {APP_VERSION}</Text>
         <Text style={styles.body}>
           တရားစာကို အော့ဖ်လိုင်းဖတ်ရန်၊ အသံဖိုင်နာရန်နှင့် စိတ်ကြိုက်စာရင်း သိမ်းရန်
           ဖန်တီးထားသော အက်ပ်ဖြစ်သည်။
@@ -37,6 +38,12 @@ function createStyles(colors) {
       fontWeight: '700',
       color: colors.ink,
       lineHeight: 40,
+    },
+    version: {
+      marginTop: 6,
+      fontFamily: myanmarFont,
+      fontSize: 14,
+      color: colors.muted,
     },
     body: {
       marginTop: 12,

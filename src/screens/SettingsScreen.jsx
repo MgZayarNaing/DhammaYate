@@ -2,7 +2,7 @@ import React from 'react';
 import {Linking, Pressable, ScrollView, Share, Switch, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
-import {moreAppsUrl, shareMessage, storeUrl, TELEGRAM_URL} from '../data/appLinks';
+import {APP_VERSION, moreAppsUrl, shareMessage, storeUrl, TELEGRAM_URL} from '../data/appLinks';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {FONT_SIZES, myanmarFont} from '../theme';
 
@@ -108,6 +108,7 @@ export function SettingsScreen() {
           />
           <MenuRow label="About" styles={styles} colors={colors} last onPress={openAbout} />
         </View>
+        <Text style={styles.version}>Version {APP_VERSION}</Text>
       </ScrollView>
     </View>
   );
@@ -253,6 +254,13 @@ function createStyles(colors) {
     },
     pressed: {
       opacity: 0.7,
+    },
+    version: {
+      marginTop: 16,
+      textAlign: 'center',
+      fontFamily: myanmarFont,
+      fontSize: 13,
+      color: colors.muted,
     },
   };
 }

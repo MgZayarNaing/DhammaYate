@@ -77,13 +77,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.oitmyanmar.taraytawmyar"
+    namespace "com.oitmyanmar.dhammayate"
     defaultConfig {
-        applicationId "com.oitmyanmar.taraytawmyar"
+        applicationId "com.oitmyanmar.dhammayate"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
     signingConfigs {
         debug {

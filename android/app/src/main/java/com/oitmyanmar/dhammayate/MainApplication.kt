@@ -1,4 +1,4 @@
-package com.oitmyanmar.taraytawmyar
+package com.oitmyanmar.dhammayate
 
 import android.app.Application
 import com.facebook.react.PackageList
