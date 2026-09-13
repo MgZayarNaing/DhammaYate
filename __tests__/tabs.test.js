@@ -22,34 +22,36 @@ test('bottom tabs match the requested sections', () => {
 
 test('includes sample audio talks', () => {
   expect(dhammaAudios.length).toBeGreaterThanOrEqual(6);
-  expect(getAudioById('audio-metta')?.title).toBe('မေတ္တာသုတ်');
+  expect(getAudioById('audio-metta')?.title).toBe(
+    'မေတ္တာသုတ် - အရှင်သုဇာတ (မေတ္တာအေးဆရာတော်)',
+  );
 });
 
 test('playlist queue stays in custom order', () => {
   const queue = getPlaylistQueue({
     id: 'pl-1',
     name: 'နံနက်',
-    audioIds: ['audio-precepts', 'audio-metta'],
+    audioIds: ['audio-mangala', 'audio-metta'],
   });
-  expect(queue.map(item => item.id)).toEqual(['audio-precepts', 'audio-metta']);
-  expect(getAdjacentAudio('audio-precepts', 1, queue)?.id).toBe('audio-metta');
+  expect(queue.map(item => item.id)).toEqual(['audio-mangala', 'audio-metta']);
+  expect(getAdjacentAudio('audio-mangala', 1, queue)?.id).toBe('audio-metta');
 });
 
 test('downloads playlist is derived from downloaded ids', () => {
   expect(getDownloadsPlaylist([])).toBeNull();
   expect(getDownloadsPlaylist(undefined)).toBeNull();
 
-  const playlist = getDownloadsPlaylist(['audio-metta', 'audio-precepts', 'missing']);
+  const playlist = getDownloadsPlaylist(['audio-metta', 'audio-mangala', 'missing']);
   expect(playlist).toEqual({
     id: DOWNLOADS_PLAYLIST_ID,
     name: 'ဒေါင်းလုဒ်',
-    audioIds: ['audio-metta', 'audio-precepts'],
+    audioIds: ['audio-metta', 'audio-mangala'],
   });
 
   expect(
     resolvePlaylist(DOWNLOADS_PLAYLIST_ID, {
-      downloadedAudioIds: ['audio-precepts', 'audio-metta'],
+      downloadedAudioIds: ['audio-mangala', 'audio-metta'],
       playlists: [],
     })?.audioIds,
-  ).toEqual(['audio-precepts', 'audio-metta']);
+  ).toEqual(['audio-mangala', 'audio-metta']);
 });
