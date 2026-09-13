@@ -100,6 +100,32 @@ export function getAdjacentAudio(id, delta, queue = dhammaAudios) {
   return queue[next];
 }
 
+export const DOWNLOADS_PLAYLIST_ID = 'pl-downloads';
+
+export function getDownloadsPlaylist(downloadedAudioIds) {
+  const audioIds = Array.isArray(downloadedAudioIds)
+    ? downloadedAudioIds.filter(id => typeof id === 'string' && getAudioById(id))
+    : [];
+  if (audioIds.length === 0) {
+    return null;
+  }
+  return {
+    id: DOWNLOADS_PLAYLIST_ID,
+    name: 'ဒေါင်းလုဒ်',
+    audioIds,
+  };
+}
+
+export function resolvePlaylist(playlistId, settings) {
+  if (!playlistId) {
+    return undefined;
+  }
+  if (playlistId === DOWNLOADS_PLAYLIST_ID) {
+    return getDownloadsPlaylist(settings?.downloadedAudioIds) ?? undefined;
+  }
+  return (settings?.playlists ?? []).find(item => item.id === playlistId);
+}
+
 export function getPlaylistQueue(playlist) {
   if (!playlist) {
     return dhammaAudios;

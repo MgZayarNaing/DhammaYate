@@ -3,7 +3,10 @@ import {
   dhammaAudios,
   getAdjacentAudio,
   getAudioById,
+  getDownloadsPlaylist,
   getPlaylistQueue,
+  resolvePlaylist,
+  DOWNLOADS_PLAYLIST_ID,
 } from '../src/data/audios';
 
 test('bottom tabs match the requested sections', () => {
@@ -30,4 +33,23 @@ test('playlist queue stays in custom order', () => {
   });
   expect(queue.map(item => item.id)).toEqual(['audio-precepts', 'audio-metta']);
   expect(getAdjacentAudio('audio-precepts', 1, queue)?.id).toBe('audio-metta');
+});
+
+test('downloads playlist is derived from downloaded ids', () => {
+  expect(getDownloadsPlaylist([])).toBeNull();
+  expect(getDownloadsPlaylist(undefined)).toBeNull();
+
+  const playlist = getDownloadsPlaylist(['audio-metta', 'audio-precepts', 'missing']);
+  expect(playlist).toEqual({
+    id: DOWNLOADS_PLAYLIST_ID,
+    name: 'ဒေါင်းလုဒ်',
+    audioIds: ['audio-metta', 'audio-precepts'],
+  });
+
+  expect(
+    resolvePlaylist(DOWNLOADS_PLAYLIST_ID, {
+      downloadedAudioIds: ['audio-precepts', 'audio-metta'],
+      playlists: [],
+    })?.audioIds,
+  ).toEqual(['audio-precepts', 'audio-metta']);
 });

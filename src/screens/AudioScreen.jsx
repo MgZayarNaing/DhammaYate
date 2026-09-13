@@ -3,7 +3,7 @@ import {Pressable, ScrollView, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CreatePlaylistModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
-import {dhammaAudios, getAudioById} from '../data/audios';
+import {dhammaAudios, getAudioById, getDownloadsPlaylist} from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {myanmarFont} from '../theme';
 
@@ -13,6 +13,8 @@ export function AudioScreen() {
   const [creating, setCreating] = useState(false);
   const playlists = settings.playlists ?? [];
   const downloaded = settings.downloadedAudioIds ?? [];
+  const downloadsPlaylist = getDownloadsPlaylist(downloaded);
+  const totalPlaylists = [downloadsPlaylist, ...playlists].filter(Boolean);
 
   return (
     <View style={styles.screen}>
@@ -28,9 +30,10 @@ export function AudioScreen() {
         </View>
         {playlists.length === 0 ? (
           <Text style={styles.hint}>Playlist အသစ်တွင် အသံဖိုင်များ ရွေးချယ်နိုင်သည်။</Text>
-        ) : (
+        ) : null}
+        {totalPlaylists.length > 0 ? (
           <View style={styles.stack}>
-            {playlists.map(playlist => (
+            {totalPlaylists.map(playlist => (
               <View key={playlist.id} style={styles.card}>
                 <Pressable
                   onPress={() => {
@@ -58,7 +61,7 @@ export function AudioScreen() {
               </View>
             ))}
           </View>
-        )}
+        ) : null}
 
         <Text style={styles.section}>အသံဖိုင်များ</Text>
         <View style={styles.stack}>

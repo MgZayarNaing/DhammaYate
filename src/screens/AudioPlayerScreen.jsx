@@ -20,7 +20,12 @@ import {
 } from '../audioFiles';
 import {AddToPlaylistModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
-import {getAdjacentAudio, getAudioById, getPlaylistQueue} from '../data/audios';
+import {
+  getAdjacentAudio,
+  getAudioById,
+  getPlaylistQueue,
+  resolvePlaylist,
+} from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {myanmarFont} from '../theme';
 
@@ -79,7 +84,7 @@ export function AudioPlayerScreen({audioId}) {
   const spin = useRef(new Animated.Value(0)).current;
   const spinLoop = useRef(null);
 
-  const playlist = (settings.playlists ?? []).find(item => item.id === route.playlistId);
+  const playlist = resolvePlaylist(route.playlistId, settings);
   const queue = getPlaylistQueue(playlist);
   const index = queue.findIndex(item => item.id === audioId);
   const fromTab = route.from && route.from !== 'audioPlayer' ? route.from : 'audio';

@@ -3,7 +3,7 @@ import {FlatList, Pressable, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {AddTracksModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
-import {getAudioById} from '../data/audios';
+import {DOWNLOADS_PLAYLIST_ID, getAudioById, resolvePlaylist} from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {myanmarFont} from '../theme';
 
@@ -11,8 +11,9 @@ export function PlaylistScreen({playlistId}) {
   const {settings, openAudio, deletePlaylist, removeFromPlaylist, goBack} = useApp();
   const {colors, styles} = useThemedStyles(createStyles);
   const [adding, setAdding] = useState(false);
-  const playlist = (settings.playlists ?? []).find(item => item.id === playlistId);
+  const playlist = resolvePlaylist(playlistId, settings);
   const items = (playlist?.audioIds ?? []).map(id => getAudioById(id)).filter(Boolean);
+  const isDownloads = playlist?.id === DOWNLOADS_PLAYLIST_ID;
 
   if (!playlist) {
     return (
@@ -44,32 +45,36 @@ export function PlaylistScreen({playlistId}) {
               <Icon name="play" size={16} color={colors.onAccent} style={styles.playAllIcon} />
               <Text style={styles.playAllText}>All</Text>
             </Pressable>
-            <Pressable
-              onPress={() => setAdding(true)}
-              style={styles.addButton}
-              accessibilityRole="button"
-              accessibilityLabel="အသံဖိုင် ထည့်ရန်">
-              <View style={styles.addButtonRow}>
-                <Icon name="plus" size={16} color={colors.ink} />
-                <Text style={styles.addButtonText}>အသံဖိုင် ထည့်ရန်</Text>
-              </View>
-            </Pressable>
+            {isDownloads ? null : (
+              <Pressable
+                onPress={() => setAdding(true)}
+                style={styles.addButton}
+                accessibilityRole="button"
+                accessibilityLabel="အသံဖိုင် ထည့်ရန်">
+                <View style={styles.addButtonRow}>
+                  <Icon name="plus" size={16} color={colors.ink} />
+                  <Text style={styles.addButtonText}>အသံဖိုင် ထည့်ရန်</Text>
+                </View>
+              </Pressable>
+            )}
           </View>
         }
         ListEmptyComponent={
           <Text style={styles.empty}>ဤ playlist တွင် အသံမရှိသေးပါ။</Text>
         }
         ListFooterComponent={
-          <Pressable
-            onPress={() => {
-              deletePlaylist(playlist.id);
-              goBack();
-            }}
-            style={styles.delete}
-            accessibilityRole="button"
-            accessibilityLabel="Playlist ဖျက်ရန်">
-            <Text style={styles.deleteText}>Playlist ဖျက်ရန်</Text>
-          </Pressable>
+          isDownloads ? null : (
+            <Pressable
+              onPress={() => {
+                deletePlaylist(playlist.id);
+                goBack();
+              }}
+              style={styles.delete}
+              accessibilityRole="button"
+              accessibilityLabel="Playlist ဖျက်ရန်">
+              <Text style={styles.deleteText}>Playlist ဖျက်ရန်</Text>
+            </Pressable>
+          )
         }
         renderItem={({item}) => (
           <View style={styles.row}>
@@ -83,20 +88,24 @@ export function PlaylistScreen({playlistId}) {
               </View>
               <Text style={styles.title}>{item.title}</Text>
             </Pressable>
-            <Pressable
-              onPress={() => removeFromPlaylist(playlist.id, item.id)}
-              hitSlop={10}
-              accessibilityLabel="ဖြုတ်ရန်">
-              <Icon name="minus" size={22} color={colors.ink} />
-            </Pressable>
+            {isDownloads ? null : (
+              <Pressable
+                onPress={() => removeFromPlaylist(playlist.id, item.id)}
+                hitSlop={10}
+                accessibilityLabel="ဖြုတ်ရန်">
+                <Icon name="minus" size={22} color={colors.ink} />
+              </Pressable>
+            )}
           </View>
         )}
       />
-      <AddTracksModal
-        visible={adding}
-        playlistId={playlist.id}
-        onClose={() => setAdding(false)}
-      />
+      {isDownloads ? null : (
+        <AddTracksModal
+          visible={adding}
+          playlistId={playlist.id}
+          onClose={() => setAdding(false)}
+        />
+      )}
     </View>
   );
 }

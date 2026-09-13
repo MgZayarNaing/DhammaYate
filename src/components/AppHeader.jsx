@@ -4,13 +4,13 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {APP_NAME} from '../data/appLinks';
-import {getAudioById} from '../data/audios';
+import {getAudioById, resolvePlaylist} from '../data/audios';
 import {getBookById} from '../data/books';
 import {getTextById} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {myanmarFont} from '../theme';
 
-function headerState(route, openTab, goBack, playlists) {
+function headerState(route, openTab, goBack, settings) {
   if (route.name === 'tabs' && route.tab === 'home') {
     return {mode: 'brand', title: APP_NAME};
   }
@@ -54,7 +54,7 @@ function headerState(route, openTab, goBack, playlists) {
   }
 
   if (route.name === 'playlist') {
-    const playlist = (playlists ?? []).find(item => item.id === route.playlistId);
+    const playlist = resolvePlaylist(route.playlistId, settings);
     return {
       mode: 'back',
       title: playlist?.name ?? 'Playlist',
@@ -77,7 +77,7 @@ export function AppHeader() {
   const insets = useSafeAreaInsets();
   const {route, goBack, openTab, settings} = useApp();
   const {colors, styles} = useThemedStyles(createStyles);
-  const header = headerState(route, openTab, goBack, settings.playlists);
+  const header = headerState(route, openTab, goBack, settings);
 
   return (
     <View style={[styles.bar, {paddingTop: insets.top + 10}]}>
