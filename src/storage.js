@@ -9,6 +9,7 @@ export const defaultSettings = {
   bookmarks: [],
   lastReadId: null,
   playlists: [],
+  downloadedAudioIds: [],
 };
 
 function parsePlaylists(value) {
@@ -24,6 +25,13 @@ function parsePlaylists(value) {
         ? item.audioIds.filter(id => typeof id === 'string')
         : [],
     }));
+}
+
+function parseIdList(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter(id => typeof id === 'string');
 }
 
 function isColorScheme(value) {
@@ -45,12 +53,11 @@ export async function loadSettings() {
         : parsed.readingTheme === 'night'
           ? 'dark'
           : DEFAULT_COLOR_SCHEME,
-      bookmarks: Array.isArray(parsed.bookmarks)
-        ? parsed.bookmarks.filter(id => typeof id === 'string')
-        : [],
+      bookmarks: parseIdList(parsed.bookmarks),
       lastReadId:
         typeof parsed.lastReadId === 'string' ? parsed.lastReadId : null,
       playlists: parsePlaylists(parsed.playlists),
+      downloadedAudioIds: parseIdList(parsed.downloadedAudioIds),
     };
   } catch {
     return defaultSettings;

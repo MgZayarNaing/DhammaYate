@@ -12,6 +12,7 @@ export function AudioScreen() {
   const {colors, styles} = useThemedStyles(createStyles);
   const [creating, setCreating] = useState(false);
   const playlists = settings.playlists ?? [];
+  const downloaded = settings.downloadedAudioIds ?? [];
 
   return (
     <View style={styles.screen}>
@@ -72,6 +73,9 @@ export function AudioScreen() {
                 <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
               </View>
               <Text style={styles.title}>{item.title}</Text>
+              {downloaded.includes(item.id) ? (
+                <Icon name="cloud" size={18} color={colors.muted} />
+              ) : null}
             </Pressable>
           ))}
         </View>

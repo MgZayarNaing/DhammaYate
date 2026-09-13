@@ -9,7 +9,7 @@ export const dhammaAudios = [
     category: 'sutta',
     minutes: 12,
     subtitle: 'မင်္ဂလာသုံးဆယ့်ရှစ်ပါးကို ရွတ်ဖတ်နာယူရန်',
-    file: exampleFile,
+    file: 'https://dhammadownload.com/MP3Library/PaYateTaYar/001-MingunSayadaw-Payategyi11thout.mp3',
   },
   {
     id: 'audio-metta',
@@ -19,7 +19,7 @@ export const dhammaAudios = [
     category: 'sutta',
     minutes: 10,
     subtitle: 'သတ္တဝါအားလုံးအပေါ် မေတ္တာပွားများရန်',
-    file: exampleFile,
+    file: "https://dhammadownload.com/MP3Library/PaYateTaYar/002-UOaktaMa-PaYateGyi11Thout-YaeSuPaYate-GoneKunChar-Kamawar.mp3",
   },
   {
     id: 'audio-dhammacakka',
@@ -29,7 +29,7 @@ export const dhammaAudios = [
     category: 'sutta',
     minutes: 16,
     subtitle: 'တရားစက်ကို ရှေးဦးစွာ လည်စေသောသုတ်',
-    file: exampleFile,
+    file: "https://dhammadownload.com/MP3Library/PaYateTaYar/011-PaAukSayadawgyi-Payategyi-11.mp3",
   },
   {
     id: 'audio-four-truths',

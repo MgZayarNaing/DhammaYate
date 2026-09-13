@@ -21,6 +21,7 @@ export function AppProvider({children}) {
     bookmarks: [],
     lastReadId: null,
     playlists: [],
+    downloadedAudioIds: [],
   });
   const [route, setRoute] = useState({name: 'tabs', tab: 'home'});
 
@@ -205,6 +206,25 @@ export function AppProvider({children}) {
     }));
   }, []);
 
+  const markAudioDownloaded = useCallback(audioId => {
+    setSettings(current => {
+      const ids = current.downloadedAudioIds ?? [];
+      if (ids.includes(audioId)) {
+        return current;
+      }
+      return {...current, downloadedAudioIds: [...ids, audioId]};
+    });
+  }, []);
+
+  const unmarkAudioDownloaded = useCallback(audioId => {
+    setSettings(current => ({
+      ...current,
+      downloadedAudioIds: (current.downloadedAudioIds ?? []).filter(
+        id => id !== audioId,
+      ),
+    }));
+  }, []);
+
   const value = useMemo(
     () => ({
       ready,
@@ -228,6 +248,8 @@ export function AppProvider({children}) {
       addToPlaylist,
       setPlaylistTracks,
       removeFromPlaylist,
+      markAudioDownloaded,
+      unmarkAudioDownloaded,
     }),
     [
       ready,
@@ -251,6 +273,8 @@ export function AppProvider({children}) {
       addToPlaylist,
       setPlaylistTracks,
       removeFromPlaylist,
+      markAudioDownloaded,
+      unmarkAudioDownloaded,
     ],
   );
 

@@ -1,8 +1,23 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Animated, Easing, Pressable, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Easing,
+  Pressable,
+  Text,
+  View,
+} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import SoundPlayer from 'react-native-sound-player';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {
+  audioFileExists,
+  deleteAudioDownload,
+  downloadAudio,
+  filePlayUrl,
+  localAudioPath,
+} from '../audioFiles';
 import {AddToPlaylistModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
 import {getAdjacentAudio, getAudioById, getPlaylistQueue} from '../data/audios';
@@ -35,7 +50,14 @@ function safePlay() {
 
 export function AudioPlayerScreen({audioId}) {
   const insets = useSafeAreaInsets();
-  const {goBack, openAudio, route, settings} = useApp();
+  const {
+    goBack,
+    openAudio,
+    route,
+    settings,
+    markAudioDownloaded,
+    unmarkAudioDownloaded,
+  } = useApp();
   const {colors, styles} = useThemedStyles(createStyles);
   const audio = getAudioById(audioId);
   const [playing, setPlaying] = useState(false);
@@ -43,6 +65,9 @@ export function AudioPlayerScreen({audioId}) {
   const [duration, setDuration] = useState(0);
   const [loop, setLoop] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [offlineReady, setOfflineReady] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [localRevision, setLocalRevision] = useState(0);
   const timerRef = useRef(null);
   const trackWidthRef = useRef(0);
   const scrubbingRef = useRef(false);
@@ -103,10 +128,12 @@ export function AudioPlayerScreen({audioId}) {
       setPlaying(false);
       setCurrentTime(0);
       setDuration(0);
+      setOfflineReady(false);
       return undefined;
     }
 
-    const loaded = SoundPlayer.addEventListener('FinishedLoading', async () => {
+    let cancelled = false;
+    const onLoaded = async () => {
       try {
         const info = await SoundPlayer.getInfo();
         setDuration(info.duration ?? 0);
@@ -117,7 +144,9 @@ export function AudioPlayerScreen({audioId}) {
       if (safePlay()) {
         setPlaying(true);
       }
-    });
+    };
+    const loaded = SoundPlayer.addEventListener('FinishedLoading', onLoaded);
+    const loadedUrl = SoundPlayer.addEventListener('FinishedLoadingURL', onLoaded);
     const finished = SoundPlayer.addEventListener('FinishedPlaying', () => {
       setCurrentTime(0);
       if (loopRef.current) {
@@ -147,14 +176,37 @@ export function AudioPlayerScreen({audioId}) {
     }
     setPlaying(false);
     setCurrentTime(0);
-    try {
-      SoundPlayer.loadAsset(audio.file);
-    } catch {
-      setPlaying(false);
-    }
+
+    (async () => {
+      try {
+        if (typeof audio.file === 'string') {
+          const hasLocal = await audioFileExists(audio.id);
+          if (cancelled) {
+            return;
+          }
+          setOfflineReady(hasLocal);
+          if (hasLocal) {
+            markAudioDownloaded(audio.id);
+            SoundPlayer.loadUrl(filePlayUrl(localAudioPath(audio.id)));
+          } else {
+            unmarkAudioDownloaded(audio.id);
+            SoundPlayer.loadUrl(audio.file);
+          }
+        } else {
+          setOfflineReady(false);
+          SoundPlayer.loadAsset(audio.file);
+        }
+      } catch {
+        if (!cancelled) {
+          setPlaying(false);
+        }
+      }
+    })();
 
     return () => {
+      cancelled = true;
       loaded.remove();
+      loadedUrl.remove();
       finished.remove();
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -165,7 +217,7 @@ export function AudioPlayerScreen({audioId}) {
         // Native player may already be released.
       }
     };
-  }, [audio?.file, audioId, openAudio]);
+  }, [audio?.file, audio?.id, audioId, localRevision, markAudioDownloaded, openAudio, unmarkAudioDownloaded]);
 
   useEffect(() => {
     if (!playing) {
@@ -272,6 +324,45 @@ export function AudioPlayerScreen({audioId}) {
     }
   };
 
+  const canDownload = typeof audio.file === 'string';
+
+  const removeDownload = async () => {
+    try {
+      await deleteAudioDownload(audio.id);
+      unmarkAudioDownloaded(audio.id);
+      setOfflineReady(false);
+      setLocalRevision(value => value + 1);
+    } catch {
+      Alert.alert('ဖျက်မရပါ', 'ဒေါင်းလုဒ်ဖိုင်ကို ဖျက်၍မရပါ။');
+    }
+  };
+
+  const onDownloadPress = () => {
+    if (!canDownload || downloading) {
+      return;
+    }
+    if (offlineReady) {
+      Alert.alert('ဒေါင်းလုဒ် ဖျက်မည်လား', 'သိမ်းထားသော အသံဖိုင်ကို ဖျက်မည်။', [
+        {text: 'မလုပ်တော့', style: 'cancel'},
+        {text: 'ဖျက်မည်', style: 'destructive', onPress: () => removeDownload()},
+      ]);
+      return;
+    }
+    setDownloading(true);
+    downloadAudio(audio.id, audio.file)
+      .then(() => {
+        markAudioDownloaded(audio.id);
+        setOfflineReady(true);
+        setLocalRevision(value => value + 1);
+      })
+      .catch(() => {
+        Alert.alert('ဒေါင်းလုဒ် မအောင်မြင်ပါ', 'အင်တာနက်ရှိမှ ထပ်ကြိုးစားပါ။');
+      })
+      .finally(() => {
+        setDownloading(false);
+      });
+  };
+
   return (
     <View
       style={[
@@ -285,6 +376,27 @@ export function AudioPlayerScreen({audioId}) {
             <Text style={styles.back}>နောက်</Text>
           </View>
         </Pressable>
+        {canDownload ? (
+          <Pressable
+            onPress={onDownloadPress}
+            style={[styles.toolButton, offlineReady && styles.toolButtonOn]}
+            accessibilityRole="button"
+            accessibilityLabel={
+              offlineReady ? 'ဒေါင်းလုဒ် ဖျက်ရန်' : 'အော့ဖ်လိုင်း သိမ်းရန်'
+            }>
+            {downloading ? (
+              <ActivityIndicator size="small" color={colors.ink} />
+            ) : (
+              <Icon
+                name={offlineReady ? 'cloud' : 'download'}
+                size={18}
+                color={offlineReady ? colors.onAccent : colors.ink}
+              />
+            )}
+          </Pressable>
+        ) : (
+          <View style={styles.toolButtonSpacer} />
+        )}
       </View>
 
       <View style={styles.body}>
@@ -383,7 +495,12 @@ function createStyles(colors) {
     topBar: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'space-between',
       minHeight: 36,
+    },
+    toolButtonSpacer: {
+      width: 34,
+      height: 34,
     },
     backRow: {
       flexDirection: 'row',
