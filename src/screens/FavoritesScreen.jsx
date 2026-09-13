@@ -25,7 +25,7 @@ export function FavoritesScreen() {
           <View style={styles.emptyBox}>
             <Text style={styles.emptyTitle}>စိတ်ကြိုက်စာ မရှိသေးပါ</Text>
             <Text style={styles.emptyBody}>
-              စာဖတ်နေစဉ် ★ ခလုတ်ကို နှိပ်၍ နှစ်သက်သော တရားစာကို သိမ်းနိုင်သည်။
+              စာဖတ်နေစဉ် မှတ်သားခလုတ်ကို နှိပ်၍ နှစ်သက်သော တရားစာကို သိမ်းနိုင်သည်။
             </Text>
           </View>
         }

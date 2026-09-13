@@ -1,13 +1,43 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Animated, Easing, Pressable, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Easing,
+  Image,
+  Pressable,
+  Text,
+  View,
+} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import SoundPlayer from 'react-native-sound-player';
-import {RepeatIcon} from '../components/PlayerIcons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {
+  audioFileExists,
+  deleteAudioDownload,
+  downloadAudio,
+  filePlayUrl,
+  localAudioPath,
+} from '../audioFiles';
 import {AddToPlaylistModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
-import {getAdjacentAudio, getAudioById, getPlaylistQueue} from '../data/audios';
+import {
+  getAdjacentAudio,
+  getAudioById,
+  getPlaylistQueue,
+  resolvePlaylist,
+} from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {myanmarFont} from '../theme';
+
+const HERO_SIZE = 240;
+const LOGO_SIZE = 240;
+const RAY_SIZE = 120;
+
+const HEAD_CENTER_X = HERO_SIZE / 2;
+const HEAD_CENTER_Y = (HERO_SIZE - LOGO_SIZE) / 2 + LOGO_SIZE * 0.25;
+const RAY_TOP = HEAD_CENTER_Y - RAY_SIZE / 2;
+const RAY_LEFT = HEAD_CENTER_X - RAY_SIZE / 2;
 
 function formatTime(seconds) {
   const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
@@ -35,7 +65,14 @@ function safePlay() {
 
 export function AudioPlayerScreen({audioId}) {
   const insets = useSafeAreaInsets();
-  const {goBack, openAudio, route, settings} = useApp();
+  const {
+    goBack,
+    openAudio,
+    route,
+    settings,
+    markAudioDownloaded,
+    unmarkAudioDownloaded,
+  } = useApp();
   const {colors, styles} = useThemedStyles(createStyles);
   const audio = getAudioById(audioId);
   const [playing, setPlaying] = useState(false);
@@ -43,6 +80,9 @@ export function AudioPlayerScreen({audioId}) {
   const [duration, setDuration] = useState(0);
   const [loop, setLoop] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [offlineReady, setOfflineReady] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [localRevision, setLocalRevision] = useState(0);
   const timerRef = useRef(null);
   const trackWidthRef = useRef(0);
   const scrubbingRef = useRef(false);
@@ -51,10 +91,12 @@ export function AudioPlayerScreen({audioId}) {
   const fromTabRef = useRef('audio');
   const playlistIdRef = useRef(route.playlistId);
   const queueRef = useRef([]);
-  const spin = useRef(new Animated.Value(0)).current;
-  const spinLoop = useRef(null);
+  const rayA = useRef(new Animated.Value(0)).current;
+  const rayB = useRef(new Animated.Value(0)).current;
+  const rayC = useRef(new Animated.Value(0)).current;
+  const rayLoop = useRef(null);
 
-  const playlist = (settings.playlists ?? []).find(item => item.id === route.playlistId);
+  const playlist = resolvePlaylist(route.playlistId, settings);
   const queue = getPlaylistQueue(playlist);
   const index = queue.findIndex(item => item.id === audioId);
   const fromTab = route.from && route.from !== 'audioPlayer' ? route.from : 'audio';
@@ -64,49 +106,79 @@ export function AudioPlayerScreen({audioId}) {
   playlistIdRef.current = route.playlistId;
   queueRef.current = queue;
 
-  const spinStyle = useMemo(
-    () => ({
+  const rayStyles = useMemo(() => {
+    const makeRing = value => ({
       transform: [
         {
-          rotate: spin.interpolate({
+          scale: value.interpolate({
             inputRange: [0, 1],
-            outputRange: ['0deg', '360deg'],
+            outputRange: [1, 1.45],
           }),
         },
       ],
-    }),
-    [spin],
-  );
+      opacity: value.interpolate({
+        inputRange: [0, 0.2, 1],
+        outputRange: [0.45, 0.3, 0],
+      }),
+    });
+    return [makeRing(rayA), makeRing(rayB), makeRing(rayC)];
+  }, [rayA, rayB, rayC]);
 
   useEffect(() => {
+    const rays = [rayA, rayB, rayC];
     if (playing) {
-      spinLoop.current = Animated.loop(
-        Animated.timing(spin, {
-          toValue: 1,
-          duration: 8000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
+      rays.forEach(value => value.setValue(0));
+      const animations = rays.map((value, index) =>
+        Animated.sequence([
+          Animated.delay(index * 600),
+          Animated.loop(
+            Animated.sequence([
+              Animated.timing(value, {
+                toValue: 1,
+                duration: 1800,
+                easing: Easing.out(Easing.ease),
+                useNativeDriver: true,
+              }),
+              Animated.timing(value, {
+                toValue: 0,
+                duration: 0,
+                useNativeDriver: true,
+              }),
+            ]),
+          ),
+        ]),
       );
-      spinLoop.current.start();
+      rayLoop.current = Animated.parallel(animations);
+      rayLoop.current.start();
       return () => {
-        spinLoop.current?.stop();
-        spin.setValue(0);
+        rayLoop.current?.stop();
       };
     }
-    spinLoop.current?.stop();
+    rayLoop.current?.stop();
+    Animated.parallel(
+      rays.map(value =>
+        Animated.timing(value, {
+          toValue: 0,
+          duration: 280,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ),
+    ).start();
     return undefined;
-  }, [playing, spin]);
+  }, [playing, rayA, rayB, rayC]);
 
   useEffect(() => {
     if (!audio?.file) {
       setPlaying(false);
       setCurrentTime(0);
       setDuration(0);
+      setOfflineReady(false);
       return undefined;
     }
 
-    const loaded = SoundPlayer.addEventListener('FinishedLoading', async () => {
+    let cancelled = false;
+    const onLoaded = async () => {
       try {
         const info = await SoundPlayer.getInfo();
         setDuration(info.duration ?? 0);
@@ -117,7 +189,9 @@ export function AudioPlayerScreen({audioId}) {
       if (safePlay()) {
         setPlaying(true);
       }
-    });
+    };
+    const loaded = SoundPlayer.addEventListener('FinishedLoading', onLoaded);
+    const loadedUrl = SoundPlayer.addEventListener('FinishedLoadingURL', onLoaded);
     const finished = SoundPlayer.addEventListener('FinishedPlaying', () => {
       setCurrentTime(0);
       if (loopRef.current) {
@@ -147,14 +221,37 @@ export function AudioPlayerScreen({audioId}) {
     }
     setPlaying(false);
     setCurrentTime(0);
-    try {
-      SoundPlayer.loadAsset(audio.file);
-    } catch {
-      setPlaying(false);
-    }
+
+    (async () => {
+      try {
+        if (typeof audio.file === 'string') {
+          const hasLocal = await audioFileExists(audio.id);
+          if (cancelled) {
+            return;
+          }
+          setOfflineReady(hasLocal);
+          if (hasLocal) {
+            markAudioDownloaded(audio.id);
+            SoundPlayer.loadUrl(filePlayUrl(localAudioPath(audio.id)));
+          } else {
+            unmarkAudioDownloaded(audio.id);
+            SoundPlayer.loadUrl(audio.file);
+          }
+        } else {
+          setOfflineReady(false);
+          SoundPlayer.loadAsset(audio.file);
+        }
+      } catch {
+        if (!cancelled) {
+          setPlaying(false);
+        }
+      }
+    })();
 
     return () => {
+      cancelled = true;
       loaded.remove();
+      loadedUrl.remove();
       finished.remove();
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -165,7 +262,7 @@ export function AudioPlayerScreen({audioId}) {
         // Native player may already be released.
       }
     };
-  }, [audio?.file, audioId, openAudio]);
+  }, [audio?.file, audio?.id, audioId, localRevision, markAudioDownloaded, openAudio, unmarkAudioDownloaded]);
 
   useEffect(() => {
     if (!playing) {
@@ -203,7 +300,10 @@ export function AudioPlayerScreen({audioId}) {
     return (
       <View style={[styles.screen, {paddingTop: insets.top + 12}]}>
         <Pressable onPress={goBack} hitSlop={12} accessibilityLabel="နောက်သို့">
-          <Text style={styles.back}>‹ နောက်</Text>
+          <View style={styles.backRow}>
+            <Icon name="chevron-left" size={22} color={colors.ink} />
+            <Text style={styles.back}>နောက်</Text>
+          </View>
         </Pressable>
         <Text style={styles.missingText}>အသံဖိုင် မတွေ့ပါ။</Text>
       </View>
@@ -269,6 +369,45 @@ export function AudioPlayerScreen({audioId}) {
     }
   };
 
+  const canDownload = typeof audio.file === 'string';
+
+  const removeDownload = async () => {
+    try {
+      await deleteAudioDownload(audio.id);
+      unmarkAudioDownloaded(audio.id);
+      setOfflineReady(false);
+      setLocalRevision(value => value + 1);
+    } catch {
+      Alert.alert('ဖျက်မရပါ', 'ဒေါင်းလုဒ်ဖိုင်ကို ဖျက်၍မရပါ။');
+    }
+  };
+
+  const onDownloadPress = () => {
+    if (!canDownload || downloading) {
+      return;
+    }
+    if (offlineReady) {
+      Alert.alert('ဒေါင်းလုဒ် ဖျက်မည်လား', 'သိမ်းထားသော အသံဖိုင်ကို ဖျက်မည်။', [
+        {text: 'မလုပ်တော့', style: 'cancel'},
+        {text: 'ဖျက်မည်', style: 'destructive', onPress: () => removeDownload()},
+      ]);
+      return;
+    }
+    setDownloading(true);
+    downloadAudio(audio.id, audio.file)
+      .then(() => {
+        markAudioDownloaded(audio.id);
+        setOfflineReady(true);
+        setLocalRevision(value => value + 1);
+      })
+      .catch(() => {
+        Alert.alert('ဒေါင်းလုဒ် မအောင်မြင်ပါ', 'အင်တာနက်ရှိမှ ထပ်ကြိုးစားပါ။');
+      })
+      .finally(() => {
+        setDownloading(false);
+      });
+  };
+
   return (
     <View
       style={[
@@ -277,8 +416,32 @@ export function AudioPlayerScreen({audioId}) {
       ]}>
       <View style={styles.topBar}>
         <Pressable onPress={goBack} hitSlop={12} accessibilityLabel="နောက်သို့">
-          <Text style={styles.back}>‹ နောက်</Text>
+          <View style={styles.backRow}>
+            <Icon name="chevron-left" size={22} color={colors.ink} />
+            <Text style={styles.back}>နောက်</Text>
+          </View>
         </Pressable>
+        {canDownload ? (
+          <Pressable
+            onPress={onDownloadPress}
+            style={[styles.toolButton, offlineReady && styles.toolButtonOn]}
+            accessibilityRole="button"
+            accessibilityLabel={
+              offlineReady ? 'ဒေါင်းလုဒ် ဖျက်ရန်' : 'အော့ဖ်လိုင်း သိမ်းရန်'
+            }>
+            {downloading ? (
+              <ActivityIndicator size="small" color={colors.ink} />
+            ) : (
+              <Icon
+                name={offlineReady ? 'cloud' : 'download'}
+                size={18}
+                color={offlineReady ? colors.onAccent : colors.ink}
+              />
+            )}
+          </Pressable>
+        ) : (
+          <View style={styles.toolButtonSpacer} />
+        )}
       </View>
 
       <View style={styles.body}>
@@ -286,9 +449,23 @@ export function AudioPlayerScreen({audioId}) {
           {index >= 0 ? `${index + 1} / ${queue.length}` : ''}
         </Text>
         <Text style={styles.title}>{audio.title}</Text>
-        <Animated.View style={[styles.disc, spinStyle]}>
-          <Text style={styles.discIcon}>☸</Text>
-        </Animated.View>
+        <View style={styles.hero}>
+          {rayStyles.map((ringStyle, ringIndex) => (
+            <Animated.View
+              key={`ray-${ringIndex}`}
+              pointerEvents="none"
+              style={[styles.rayRing, ringStyle, {borderColor: colors.ink}]}
+            />
+          ))}
+          <View style={styles.logoDisc}>
+            <Image
+              source={require('../assets/images/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+              accessibilityLabel="ဘုရား"
+            />
+          </View>
+        </View>
       </View>
 
       <View style={styles.footer}>
@@ -323,10 +500,10 @@ export function AudioPlayerScreen({audioId}) {
             accessibilityRole="button"
             accessibilityState={{selected: loop}}
             accessibilityLabel={loop ? 'Loop ပိတ်ရန်' : 'Loop ဖွင့်ရန်'}>
-            <RepeatIcon color={loop ? colors.onAccent : colors.ink} size={18} />
+            <Icon name="repeat" size={18} color={loop ? colors.onAccent : colors.ink} />
           </Pressable>
           <Pressable onPress={() => goAdjacent(-1)} hitSlop={8} accessibilityLabel="ယခင်အသံ">
-            <Text style={styles.skip}>⏮</Text>
+            <Icon name="skip-previous" size={22} color={colors.ink} />
           </Pressable>
           <Pressable onPress={() => skipBy(-10)} hitSlop={8} accessibilityLabel="နောက်သို့ ၁၀ စက္ကန့်">
             <Text style={styles.skipSmall}>-10</Text>
@@ -336,20 +513,25 @@ export function AudioPlayerScreen({audioId}) {
             style={[styles.playButton, !hasFile && styles.playDisabled]}
             accessibilityRole="button"
             accessibilityLabel={playing ? 'ခဏရပ်ရန်' : 'ဖွင့်ရန်'}>
-            <Text style={styles.playIcon}>{playing ? '❚❚' : '▶'}</Text>
+            <Icon
+              name={playing ? 'pause' : 'play'}
+              size={26}
+              color={colors.onAccent}
+              style={playing ? undefined : styles.playIcon}
+            />
           </Pressable>
           <Pressable onPress={() => skipBy(10)} hitSlop={8} accessibilityLabel="ရှေ့သို့ ၁၀ စက္ကန့်">
             <Text style={styles.skipSmall}>+10</Text>
           </Pressable>
           <Pressable onPress={() => goAdjacent(1)} hitSlop={8} accessibilityLabel="ရှေ့အသံ">
-            <Text style={styles.skip}>⏭</Text>
+            <Icon name="skip-next" size={22} color={colors.ink} />
           </Pressable>
           <Pressable
             onPress={() => setAdding(true)}
             style={styles.toolButton}
             accessibilityRole="button"
             accessibilityLabel="Playlist ထည့်ရန်">
-            <Text style={styles.addIcon}>+</Text>
+            <Icon name="plus" size={20} color={colors.ink} />
           </Pressable>
         </View>
       </View>
@@ -372,7 +554,17 @@ function createStyles(colors) {
     topBar: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'space-between',
       minHeight: 36,
+    },
+    toolButtonSpacer: {
+      width: 34,
+      height: 34,
+    },
+    backRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginLeft: -6,
     },
     back: {
       fontFamily: myanmarFont,
@@ -392,11 +584,6 @@ function createStyles(colors) {
     toolButtonOn: {
       backgroundColor: colors.ink,
       borderColor: colors.ink,
-    },
-    addIcon: {
-      fontSize: 20,
-      color: colors.ink,
-      lineHeight: 22,
     },
     body: {
       flex: 1,
@@ -418,18 +605,37 @@ function createStyles(colors) {
       textAlign: 'center',
       paddingHorizontal: 8,
     },
-    disc: {
+    hero: {
       marginTop: 36,
-      width: 220,
-      height: 220,
-      borderRadius: 110,
-      backgroundColor: colors.blue,
+      width: HERO_SIZE,
+      height: HERO_SIZE,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    discIcon: {
-      fontSize: 64,
-      color: colors.onAccent,
+    rayRing: {
+      position: 'absolute',
+      top: RAY_TOP,
+      left: RAY_LEFT,
+      width: RAY_SIZE,
+      height: RAY_SIZE,
+      borderRadius: RAY_SIZE / 2,
+      borderWidth: 1,
+      borderColor: colors.ink,
+      backgroundColor: 'yellow',
+      opacity: 0,
+    },
+    logoDisc: {
+      width: LOGO_SIZE,
+      height: LOGO_SIZE,
+      borderRadius: LOGO_SIZE / 2,
+      overflow: 'hidden',
+      backgroundColor: 'transparent',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    logo: {
+      width: LOGO_SIZE,
+      height: LOGO_SIZE,
     },
     footer: {
       paddingBottom: 8,
@@ -474,10 +680,6 @@ function createStyles(colors) {
       alignItems: 'center',
       justifyContent: 'space-between',
     },
-    skip: {
-      fontSize: 20,
-      color: colors.ink,
-    },
     skipSmall: {
       fontSize: 13,
       fontWeight: '700',
@@ -497,8 +699,7 @@ function createStyles(colors) {
       opacity: 0.4,
     },
     playIcon: {
-      color: colors.onAccent,
-      fontSize: 24,
+      marginLeft: 3,
     },
     missingText: {
       marginTop: 24,

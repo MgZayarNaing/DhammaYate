@@ -1,5 +1,6 @@
 import React from 'react';
 import {Linking, Pressable, ScrollView, Share, Switch, Text, View} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {moreAppsUrl, shareMessage, storeUrl, TELEGRAM_URL} from '../data/appLinks';
 import {useThemedStyles} from '../hooks/useThemedStyles';
@@ -80,44 +81,39 @@ export function SettingsScreen() {
         </View>
 
         <View style={[styles.card, styles.menuCard]}>
-          <MenuRow
-            label="Share App"
-            styles={styles}
-            onPress={shareApp}
-          />
+          <MenuRow label="Share App" styles={styles} colors={colors} onPress={shareApp} />
           <MenuRow
             label="Rate Us"
             styles={styles}
+            colors={colors}
             onPress={() => openUrl(storeUrl())}
           />
           <MenuRow
             label="More Apps"
             styles={styles}
+            colors={colors}
             onPress={() => openUrl(moreAppsUrl())}
           />
           <MenuRow
             label="Telegram Contact"
             styles={styles}
+            colors={colors}
             onPress={() => openUrl(TELEGRAM_URL)}
           />
           <MenuRow
             label="Check For Update"
             styles={styles}
+            colors={colors}
             onPress={() => openUrl(storeUrl())}
           />
-          <MenuRow
-            label="About"
-            styles={styles}
-            last
-            onPress={openAbout}
-          />
+          <MenuRow label="About" styles={styles} colors={colors} last onPress={openAbout} />
         </View>
       </ScrollView>
     </View>
   );
 }
 
-function MenuRow({label, onPress, styles, last}) {
+function MenuRow({label, onPress, styles, colors, last}) {
   return (
     <Pressable
       onPress={onPress}
@@ -129,7 +125,7 @@ function MenuRow({label, onPress, styles, last}) {
       accessibilityRole="button"
       accessibilityLabel={label}>
       <Text style={styles.linkTitle}>{label}</Text>
-      <Text style={styles.chevron}>›</Text>
+      <Icon name="chevron-right" size={20} color={colors.ink} />
     </Pressable>
   );
 }
@@ -254,11 +250,6 @@ function createStyles(colors) {
       fontSize: 16,
       fontWeight: '700',
       color: colors.ink,
-    },
-    chevron: {
-      fontSize: 26,
-      color: colors.ink,
-      lineHeight: 28,
     },
     pressed: {
       opacity: 0.7,

@@ -1,5 +1,6 @@
 import React from 'react';
 import {Pressable, ScrollView, Text, View} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {ListMark} from '../components/ListMark';
 import {useApp} from '../context/AppContext';
 import {dhammaBooks} from '../data/books';
@@ -8,7 +9,7 @@ import {myanmarFont} from '../theme';
 
 export function HomeScreen() {
   const {openBook} = useApp();
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
 
   return (
     <View style={styles.screen}>
@@ -27,7 +28,9 @@ export function HomeScreen() {
               <View style={styles.body}>
                 <Text style={styles.title}>{book.title}</Text>
               </View>
-              <Text style={styles.chevron}>›</Text>
+              {book.chapterIds.length > 1 ? (
+                <Icon name="chevron-right" size={22} color={colors.ink} style={styles.chevron} />
+              ) : null}
             </Pressable>
           ))}
         </View>
@@ -74,9 +77,6 @@ function createStyles(colors) {
       lineHeight: 28,
     },
     chevron: {
-      fontSize: 26,
-      color: colors.ink,
-      lineHeight: 28,
       marginLeft: 8,
     },
   };

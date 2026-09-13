@@ -1,5 +1,5 @@
 import React from 'react';
-import {StatusBar, Text, View} from 'react-native';
+import {StatusBar, Text, View, Image} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {APP_NAME} from '../data/appLinks';
 import {myanmarFont} from '../theme';
@@ -12,7 +12,7 @@ export function SplashScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <View style={styles.body}>
         <View style={styles.mark}>
-          <Text style={styles.markIcon}>☸</Text>
+         <Image source={require('../assets/images/logo.png')} style={styles.markIcon} />
         </View>
         <Text style={styles.title}>{APP_NAME}</Text>
       </View>
@@ -42,8 +42,9 @@ const styles = {
     justifyContent: 'center',
   },
   markIcon: {
-    fontSize: 42,
-    color: '#ffffff',
+    width: 96,
+    height: 96,
+    borderRadius: 48,
   },
   title: {
     marginTop: 20,
@@ -51,7 +52,7 @@ const styles = {
     fontSize: 32,
     fontWeight: '700',
     color: '#111111',
-    lineHeight: 44,
+    lineHeight: 52,
   },
   credit: {
     textAlign: 'center',

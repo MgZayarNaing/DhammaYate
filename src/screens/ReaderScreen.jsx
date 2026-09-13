@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Pressable, ScrollView, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {getTextById} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
@@ -9,7 +10,7 @@ import {myanmarFont} from '../theme';
 export function ReaderScreen({textId}) {
   const insets = useSafeAreaInsets();
   const {settings, goBack, toggleBookmark, bumpFontSize, markLastRead} = useApp();
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
   const text = getTextById(textId);
   const bookmarked = settings.bookmarks.includes(textId);
   const [progress, setProgress] = useState(0);
@@ -53,9 +54,11 @@ export function ReaderScreen({textId}) {
             onPress={() => toggleBookmark(text.id)}
             hitSlop={8}
             accessibilityLabel="မှတ်သားရန်">
-            <Text style={[styles.tool, bookmarked && styles.starOn]}>
-              {bookmarked ? '★' : '☆'}
-            </Text>
+            <Icon
+              name={bookmarked ? 'bookmark-check' : 'bookmark-outline'}
+              size={22}
+              color={colors.ink}
+            />
           </Pressable>
         </View>
       </View>

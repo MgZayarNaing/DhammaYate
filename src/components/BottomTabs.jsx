@@ -1,13 +1,14 @@
 import React from 'react';
 import {Pressable, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {tabs} from '../tabs';
 import {myanmarFont} from '../theme';
 
 export function BottomTabs({active, onChange}) {
   const insets = useSafeAreaInsets();
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
 
   return (
     <View style={[styles.bar, {paddingBottom: Math.max(insets.bottom, 8)}]}>
@@ -21,9 +22,11 @@ export function BottomTabs({active, onChange}) {
             accessibilityRole="button"
             accessibilityState={{selected}}
             accessibilityLabel={tab.label}>
-            <Text style={[styles.icon, selected && styles.iconActive]}>
-              {tab.icon}
-            </Text>
+            <Icon
+              name={tab.icon}
+              size={22}
+              color={selected ? colors.ink : colors.muted}
+            />
             <Text
               style={[styles.label, selected && styles.labelActive]}
               numberOfLines={2}>
@@ -51,14 +54,6 @@ function createStyles(colors) {
       alignItems: 'center',
       gap: 4,
       paddingHorizontal: 2,
-    },
-    icon: {
-      fontSize: 28,
-      lineHeight: 32,
-      color: colors.muted,
-    },
-    iconActive: {
-      color: colors.ink,
     },
     label: {
       fontFamily: myanmarFont,

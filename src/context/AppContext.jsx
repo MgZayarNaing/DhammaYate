@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import {getBookById} from '../data/books';
 import {TAB_IDS} from '../tabs';
 import {loadSettings, saveSettings} from '../storage';
 import {FONT_SIZES, getColors} from '../theme';
@@ -20,6 +21,7 @@ export function AppProvider({children}) {
     bookmarks: [],
     lastReadId: null,
     playlists: [],
+    downloadedAudioIds: [],
   });
   const [route, setRoute] = useState({name: 'tabs', tab: 'home'});
 
@@ -48,7 +50,14 @@ export function AppProvider({children}) {
     setRoute({name: 'library', from});
   }, []);
 
-  const openBook = useCallback((bookId, from = 'home') => {
+  const openBook = useCallback((bookId, from = 'home', options = {}) => {
+    const book = getBookById(bookId);
+    // Home skips the chapter list for single-chapter books; search always
+    // opens the chapter screen for "book" results (multi-chapter only).
+    if (!options.listChapters && book?.chapters.length === 1) {
+      setRoute({name: 'reader', textId: book.chapters[0].id, from});
+      return;
+    }
     setRoute({name: 'book', bookId, from});
   }, []);
 
@@ -197,6 +206,25 @@ export function AppProvider({children}) {
     }));
   }, []);
 
+  const markAudioDownloaded = useCallback(audioId => {
+    setSettings(current => {
+      const ids = current.downloadedAudioIds ?? [];
+      if (ids.includes(audioId)) {
+        return current;
+      }
+      return {...current, downloadedAudioIds: [...ids, audioId]};
+    });
+  }, []);
+
+  const unmarkAudioDownloaded = useCallback(audioId => {
+    setSettings(current => ({
+      ...current,
+      downloadedAudioIds: (current.downloadedAudioIds ?? []).filter(
+        id => id !== audioId,
+      ),
+    }));
+  }, []);
+
   const value = useMemo(
     () => ({
       ready,
@@ -220,6 +248,8 @@ export function AppProvider({children}) {
       addToPlaylist,
       setPlaylistTracks,
       removeFromPlaylist,
+      markAudioDownloaded,
+      unmarkAudioDownloaded,
     }),
     [
       ready,
@@ -243,6 +273,8 @@ export function AppProvider({children}) {
       addToPlaylist,
       setPlaylistTracks,
       removeFromPlaylist,
+      markAudioDownloaded,
+      unmarkAudioDownloaded,
     ],
   );
 

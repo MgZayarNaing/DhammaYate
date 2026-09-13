@@ -34,7 +34,6 @@ export function BookChaptersScreen({bookId}) {
             accessibilityLabel={item.title}>
             <ListMark />
             <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.chevron}>›</Text>
           </Pressable>
         )}
       />

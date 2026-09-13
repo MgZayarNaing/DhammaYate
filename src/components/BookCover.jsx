@@ -1,10 +1,11 @@
 import React from 'react';
 import {Pressable, Text, View} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {myanmarFont} from '../theme';
 
 export function BookCover({book, onPress}) {
-  const {styles} = useThemedStyles(createStyles);
+  const {colors, styles} = useThemedStyles(createStyles);
 
   return (
     <Pressable
@@ -15,7 +16,7 @@ export function BookCover({book, onPress}) {
       <View style={styles.body}>
         <Text style={styles.title}>{book.title}</Text>
       </View>
-      <Text style={styles.chevron}>›</Text>
+      <Icon name="chevron-right" size={22} color={colors.ink} style={styles.chevron} />
     </Pressable>
   );
 }
@@ -47,9 +48,6 @@ function createStyles(colors) {
       lineHeight: 28,
     },
     chevron: {
-      fontSize: 26,
-      color: colors.ink,
-      lineHeight: 28,
       marginLeft: 8,
     },
   };
