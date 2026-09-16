@@ -241,7 +241,8 @@ export function AudioPlayerScreen({audioId}) {
           setOfflineReady(false);
           SoundPlayer.loadAsset(audio.file);
         }
-      } catch {
+      } catch (error) {
+        console.warn('[audio play]', audio.id, audio.file, error);
         if (!cancelled) {
           setPlaying(false);
         }
@@ -377,7 +378,8 @@ export function AudioPlayerScreen({audioId}) {
       unmarkAudioDownloaded(audio.id);
       setOfflineReady(false);
       setLocalRevision(value => value + 1);
-    } catch {
+    } catch (error) {
+      console.warn('[audio delete]', audio.id, error);
       Alert.alert('ဖျက်မရပါ', 'ဒေါင်းလုဒ်ဖိုင်ကို ဖျက်၍မရပါ။');
     }
   };
@@ -400,8 +402,11 @@ export function AudioPlayerScreen({audioId}) {
         setOfflineReady(true);
         setLocalRevision(value => value + 1);
       })
-      .catch(() => {
-        Alert.alert('ဒေါင်းလုဒ် မအောင်မြင်ပါ', 'အင်တာနက်ရှိမှ ထပ်ကြိုးစားပါ။');
+      .catch(error => {
+        console.warn('[audio download]', audio.id, audio.file, error);
+        Alert.alert(
+          'ဒေါင်းလုဒ် မအောင်မြင်ပါ',
+        );
       })
       .finally(() => {
         setDownloading(false);
@@ -582,7 +587,7 @@ function createStyles(colors) {
       justifyContent: 'center',
     },
     toolButtonOn: {
-      backgroundColor: colors.ink,
+      backgroundColor: colors.gold,
       borderColor: colors.ink,
     },
     body: {
