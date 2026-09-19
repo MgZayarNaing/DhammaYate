@@ -32,6 +32,40 @@ test('failed download does not keep a partial file', async () => {
   });
   await expect(
     downloadAudio('audio-mangala', 'https://example.com/a.mp3'),
-  ).rejects.toThrow('download failed');
+  ).rejects.toThrow('HTTP 404');
   expect(unlink).toHaveBeenCalledWith('/mock/docs/audio/audio-mangala.mp3');
+});
+
+test('reports download progress ratios', async () => {
+  exists.mockResolvedValueOnce(true);
+  downloadFile.mockImplementationOnce(options => {
+    options.progress({bytesWritten: 50, contentLength: 100});
+    options.progress({bytesWritten: 100, contentLength: 100});
+    return {promise: Promise.resolve({statusCode: 200})};
+  });
+  const ratios = [];
+  await downloadAudio(
+    'audio-mangala',
+    'https://example.com/a.mp3',
+    ratio => ratios.push(ratio),
+  );
+  expect(ratios).toEqual([0.5, 1, 1]);
+  expect(downloadFile).toHaveBeenCalledWith(
+    expect.objectContaining({progressDivider: 1}),
+  );
+});
+
+test('skips progress when content length is unknown', async () => {
+  exists.mockResolvedValueOnce(true);
+  downloadFile.mockImplementationOnce(options => {
+    options.progress({bytesWritten: 50, contentLength: 0});
+    return {promise: Promise.resolve({statusCode: 200})};
+  });
+  const ratios = [];
+  await downloadAudio(
+    'audio-mangala',
+    'https://example.com/a.mp3',
+    ratio => ratios.push(ratio),
+  );
+  expect(ratios).toEqual([1]);
 });

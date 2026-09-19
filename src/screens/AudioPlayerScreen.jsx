@@ -1,6 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   Easing,
@@ -33,6 +32,8 @@ import {myanmarFont} from '../theme';
 const HERO_SIZE = 240;
 const LOGO_SIZE = 240;
 const RAY_SIZE = 120;
+const TOOL_BUTTON_SIZE = 34;
+const WAVE_BUBBLE = 12;
 
 const HEAD_CENTER_X = HERO_SIZE / 2;
 const HEAD_CENTER_Y = (HERO_SIZE - LOGO_SIZE) / 2 + LOGO_SIZE * 0.25;
@@ -63,6 +64,83 @@ function safePlay() {
   }
 }
 
+function DownloadWaveFill({progress, color}) {
+  const waveX = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.timing(waveX, {
+        toValue: 1,
+        duration: 900,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [waveX]);
+
+  const translateX = waveX.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -(WAVE_BUBBLE - 2)],
+  });
+  const fillHeight = Math.round(
+    Math.min(1, Math.max(0, progress)) * TOOL_BUTTON_SIZE,
+  );
+
+  return (
+    <View pointerEvents="none" style={waveStyles.clip}>
+      <View style={[waveStyles.water, {height: fillHeight}]}>
+        <Animated.View
+          style={[waveStyles.waveRow, {transform: [{translateX}]}]}>
+          {Array.from({length: 10}, (_, index) => (
+            <View
+              key={index}
+              style={[waveStyles.bubble, {backgroundColor: color}]}
+            />
+          ))}
+        </Animated.View>
+        <View style={[waveStyles.body, {backgroundColor: color}]} />
+      </View>
+    </View>
+  );
+}
+
+const waveStyles = {
+  clip: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    overflow: 'hidden',
+    borderRadius: 10,
+  },
+  water: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
+  },
+  waveRow: {
+    position: 'absolute',
+    top: -WAVE_BUBBLE / 2,
+    left: 0,
+    flexDirection: 'row',
+  },
+  bubble: {
+    width: WAVE_BUBBLE,
+    height: WAVE_BUBBLE,
+    borderRadius: WAVE_BUBBLE / 2,
+    marginLeft: -2,
+  },
+  body: {
+    flex: 1,
+    marginTop: WAVE_BUBBLE / 2,
+  },
+};
+
 export function AudioPlayerScreen({audioId}) {
   const insets = useSafeAreaInsets();
   const {
@@ -82,10 +160,12 @@ export function AudioPlayerScreen({audioId}) {
   const [adding, setAdding] = useState(false);
   const [offlineReady, setOfflineReady] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [localRevision, setLocalRevision] = useState(0);
   const timerRef = useRef(null);
   const trackWidthRef = useRef(0);
   const scrubbingRef = useRef(false);
+  const gotDownloadProgressRef = useRef(false);
   const loopRef = useRef(loop);
   const audioIdRef = useRef(audioId);
   const fromTabRef = useRef('audio');
@@ -241,7 +321,8 @@ export function AudioPlayerScreen({audioId}) {
           setOfflineReady(false);
           SoundPlayer.loadAsset(audio.file);
         }
-      } catch {
+      } catch (error) {
+        console.warn('[audio play]', audio.id, audio.file, error);
         if (!cancelled) {
           setPlaying(false);
         }
@@ -295,6 +376,19 @@ export function AudioPlayerScreen({audioId}) {
       }
     };
   }, [playing]);
+
+  useEffect(() => {
+    if (!downloading || gotDownloadProgressRef.current) {
+      return undefined;
+    }
+    const id = setInterval(() => {
+      if (gotDownloadProgressRef.current) {
+        return;
+      }
+      setDownloadProgress(value => Math.min(0.9, value + 0.04));
+    }, 400);
+    return () => clearInterval(id);
+  }, [downloading]);
 
   if (!audio) {
     return (
@@ -377,7 +471,8 @@ export function AudioPlayerScreen({audioId}) {
       unmarkAudioDownloaded(audio.id);
       setOfflineReady(false);
       setLocalRevision(value => value + 1);
-    } catch {
+    } catch (error) {
+      console.warn('[audio delete]', audio.id, error);
       Alert.alert('ဖျက်မရပါ', 'ဒေါင်းလုဒ်ဖိုင်ကို ဖျက်၍မရပါ။');
     }
   };
@@ -394,14 +489,23 @@ export function AudioPlayerScreen({audioId}) {
       return;
     }
     setDownloading(true);
-    downloadAudio(audio.id, audio.file)
+    setDownloadProgress(0);
+    gotDownloadProgressRef.current = false;
+    downloadAudio(audio.id, audio.file, ratio => {
+      gotDownloadProgressRef.current = true;
+      setDownloadProgress(ratio);
+    })
       .then(() => {
+        setDownloadProgress(1);
         markAudioDownloaded(audio.id);
         setOfflineReady(true);
-        setLocalRevision(value => value + 1);
       })
-      .catch(() => {
-        Alert.alert('ဒေါင်းလုဒ် မအောင်မြင်ပါ', 'အင်တာနက်ရှိမှ ထပ်ကြိုးစားပါ။');
+      .catch(error => {
+        console.warn('[audio download]', audio.id, audio.file, error);
+        setDownloadProgress(0);
+        Alert.alert(
+          'ဒေါင်းလုဒ် မအောင်မြင်ပါ',
+        );
       })
       .finally(() => {
         setDownloading(false);
@@ -424,20 +528,24 @@ export function AudioPlayerScreen({audioId}) {
         {canDownload ? (
           <Pressable
             onPress={onDownloadPress}
-            style={[styles.toolButton, offlineReady && styles.toolButtonOn]}
+            style={[
+              styles.toolButton,
+              offlineReady && styles.toolButtonOn,
+              downloading && styles.toolButtonDownloading,
+            ]}
             accessibilityRole="button"
             accessibilityLabel={
               offlineReady ? 'ဒေါင်းလုဒ် ဖျက်ရန်' : 'အော့ဖ်လိုင်း သိမ်းရန်'
             }>
             {downloading ? (
-              <ActivityIndicator size="small" color={colors.ink} />
-            ) : (
-              <Icon
-                name={offlineReady ? 'cloud' : 'download'}
-                size={18}
-                color={offlineReady ? colors.onAccent : colors.ink}
-              />
-            )}
+              <DownloadWaveFill progress={downloadProgress} color={colors.blue} />
+            ) : null}
+            <Icon
+              name={offlineReady ? 'cloud' : 'download'}
+              size={18}
+              color={offlineReady ? colors.onAccent : colors.ink}
+              style={styles.downloadIcon}
+            />
           </Pressable>
         ) : (
           <View style={styles.toolButtonSpacer} />
@@ -448,7 +556,7 @@ export function AudioPlayerScreen({audioId}) {
         <Text style={styles.count}>
           {index >= 0 ? `${index + 1} / ${queue.length}` : ''}
         </Text>
-        <Text style={styles.title}>{audio.title}</Text>
+        <Text style={styles.title}>{audio.paliTitle}</Text>
         <View style={styles.hero}>
           {rayStyles.map((ringStyle, ringIndex) => (
             <Animated.View
@@ -558,8 +666,8 @@ function createStyles(colors) {
       minHeight: 36,
     },
     toolButtonSpacer: {
-      width: 34,
-      height: 34,
+      width: TOOL_BUTTON_SIZE,
+      height: TOOL_BUTTON_SIZE,
     },
     backRow: {
       flexDirection: 'row',
@@ -573,16 +681,23 @@ function createStyles(colors) {
       color: colors.ink,
     },
     toolButton: {
-      width: 34,
-      height: 34,
+      width: TOOL_BUTTON_SIZE,
+      height: TOOL_BUTTON_SIZE,
       borderRadius: 10,
       borderWidth: 1.5,
       borderColor: colors.line,
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
+    },
+    toolButtonDownloading: {
+      backgroundColor: colors.bg,
+    },
+    downloadIcon: {
+      zIndex: 1,
     },
     toolButtonOn: {
-      backgroundColor: colors.ink,
+      backgroundColor: colors.gold,
       borderColor: colors.ink,
     },
     body: {
@@ -598,7 +713,7 @@ function createStyles(colors) {
     },
     title: {
       fontFamily: myanmarFont,
-      fontSize: 26,
+      fontSize: 20,
       fontWeight: '700',
       color: colors.ink,
       lineHeight: 38,
