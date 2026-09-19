@@ -22,7 +22,7 @@ function wrapError(stage, error) {
   throw new Error(`${stage}: ${error?.message ?? error}`);
 }
 
-export async function downloadAudio(audioId, url) {
+export async function downloadAudio(audioId, url, onProgress) {
   const dir = `${DocumentDirectoryPath}/audio`;
   try {
     if (!(await exists(dir))) {
@@ -34,7 +34,17 @@ export async function downloadAudio(audioId, url) {
   const toFile = localAudioPath(audioId);
   let result;
   try {
-    const {promise} = downloadFile({fromUrl: url, toFile});
+    const {promise} = downloadFile({
+      fromUrl: url,
+      toFile,
+      progressDivider: 1,
+      progress: ({bytesWritten, contentLength}) => {
+        if (!onProgress || !(contentLength > 0)) {
+          return;
+        }
+        onProgress(Math.min(1, Math.max(0, bytesWritten / contentLength)));
+      },
+    });
     result = await promise;
   } catch (error) {
     wrapError('network', error);
@@ -43,6 +53,7 @@ export async function downloadAudio(audioId, url) {
     await unlink(toFile).catch(() => {});
     throw new Error(`HTTP ${result.statusCode}`);
   }
+  onProgress?.(1);
   return toFile;
 }
 
