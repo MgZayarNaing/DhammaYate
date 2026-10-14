@@ -67,7 +67,7 @@ function Harness() {
   );
 }
 
-test('system back pops detail to tabs and exits only on tabs', async () => {
+test('system back pops detail, returns other tabs to home, and exits only on home', async () => {
   const listeners = [];
   const addSpy = jest
     .spyOn(BackHandler, 'addEventListener')
@@ -106,8 +106,23 @@ test('system back pops detail to tabs and exits only on tabs', async () => {
   expect(appApi.route.name).toBe('tabs');
   expect(appApi.route.tab).toBe('home');
 
-  const onBackAtTabs = listeners[listeners.length - 1];
-  handled = onBackAtTabs();
+  const onBackAtHome = listeners[listeners.length - 1];
+  handled = onBackAtHome();
+  expect(handled).toBe(false);
+
+  await ReactTestRenderer.act(async () => {
+    appApi.openTab('audio');
+  });
+  expect(appApi.route.tab).toBe('audio');
+
+  const onBackFromAudio = listeners[listeners.length - 1];
+  await ReactTestRenderer.act(async () => {
+    handled = onBackFromAudio();
+  });
+  expect(handled).toBe(true);
+  expect(appApi.route).toEqual({name: 'tabs', tab: 'home'});
+
+  handled = listeners[listeners.length - 1]();
   expect(handled).toBe(false);
 
   await ReactTestRenderer.act(async () => {

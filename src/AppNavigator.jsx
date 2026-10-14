@@ -51,6 +51,10 @@ export function AppNavigator() {
         goBack();
         return true;
       }
+      if (route.tab !== 'home') {
+        openTab('home');
+        return true;
+      }
       return false;
     };
     const subscription = BackHandler.addEventListener(
@@ -58,7 +62,7 @@ export function AppNavigator() {
       onBackPress,
     );
     return () => subscription.remove();
-  }, [ready, splashDone, route.name, goBack]);
+  }, [ready, splashDone, route.name, route.tab, goBack, openTab]);
 
   if (!ready || !splashDone) {
     return <SplashScreen />;
