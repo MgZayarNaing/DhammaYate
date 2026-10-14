@@ -156,6 +156,12 @@ export function AudioPlayerScreen({audioId}) {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [localRevision, setLocalRevision] = useState(0);
   const [dialog, setDialog] = useState(null);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const openDialog = payload => {
+    setDialog(payload);
+    setDialogVisible(true);
+  };
+  const closeDialog = () => setDialogVisible(false);
   const timerRef = useRef(null);
   const trackWidthRef = useRef(0);
   const scrubbingRef = useRef(false);
@@ -467,7 +473,7 @@ export function AudioPlayerScreen({audioId}) {
       setLocalRevision(value => value + 1);
     } catch (error) {
       console.warn('[audio delete]', audio.id, error);
-      setDialog({
+      openDialog({
         variant: 'deleteFailed',
         title: 'ဖျက်မရပါ',
         message: 'ဒေါင်းလုဒ်ဖိုင်ကို ဖျက်၍မရပါ။',
@@ -480,7 +486,7 @@ export function AudioPlayerScreen({audioId}) {
       return;
     }
     if (offlineReady) {
-      setDialog({
+      openDialog({
         variant: 'confirmDelete',
         title: 'ဒေါင်းလုဒ် ဖျက်မည်လား',
         message: 'သိမ်းထားသော အသံဖိုင်ကို ဖျက်မည်။',
@@ -507,7 +513,7 @@ export function AudioPlayerScreen({audioId}) {
       .catch(error => {
         console.warn('[audio download]', audio.id, audio.file, error);
         setDownloadProgress(0);
-        setDialog({
+        openDialog({
           variant: 'downloadFailed',
           title: 'ဒေါင်းလုဒ် မအောင်မြင်ပါ',
         });
@@ -654,14 +660,14 @@ export function AudioPlayerScreen({audioId}) {
         onClose={() => setAdding(false)}
       />
       <AppDialog
-        visible={dialog != null}
+        visible={dialogVisible}
         variant={dialog?.variant ?? 'downloadFailed'}
         title={dialog?.title ?? ''}
         message={dialog?.message}
         confirmLabel={dialog?.confirmLabel}
         cancelLabel={dialog?.cancelLabel}
         onConfirm={dialog?.onConfirm}
-        onClose={() => setDialog(null)}
+        onClose={closeDialog}
       />
     </View>
   );

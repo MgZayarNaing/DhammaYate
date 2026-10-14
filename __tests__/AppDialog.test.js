@@ -88,6 +88,38 @@ test('confirmDelete shows title, message, cancel and confirm', async () => {
   expect(onClose).toHaveBeenCalledTimes(1);
 });
 
+test('confirmDelete cancel calls onClose only', async () => {
+  const onConfirm = jest.fn();
+  const onClose = jest.fn();
+  let root;
+  await ReactTestRenderer.act(async () => {
+    root = ReactTestRenderer.create(
+      wrap(
+        <AppDialog
+          visible
+          variant="confirmDelete"
+          title="ဒေါင်းလုဒ် ဖျက်မည်လား"
+          message="သိမ်းထားသော အသံဖိုင်ကို ဖျက်မည်။"
+          confirmLabel="ဖျက်မည်"
+          cancelLabel="မလုပ်တော့"
+          onConfirm={onConfirm}
+          onClose={onClose}
+        />,
+      ),
+    );
+  });
+  const cancel = root.root.find(
+    node =>
+      node.props.accessibilityRole === 'button' &&
+      node.props.accessibilityLabel === 'မလုပ်တော့',
+  );
+  await ReactTestRenderer.act(async () => {
+    cancel.props.onPress();
+  });
+  expect(onConfirm).not.toHaveBeenCalled();
+  expect(onClose).toHaveBeenCalledTimes(1);
+});
+
 test('downloadFailed shows only dismiss action', async () => {
   const onClose = jest.fn();
   let root;
