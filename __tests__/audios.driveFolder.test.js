@@ -9,8 +9,7 @@ const NEW_ID_PREFIX = 'audio-drive-2026-';
 
 test('adds all practice tracks from the Oct 2026 Drive folder batch', () => {
   const batch = dhammaAudios.filter(a => a.id.startsWith(NEW_ID_PREFIX));
-  expect(batch.length).toBeGreaterThanOrEqual(28);
-  expect(batch.length).toBeLessThanOrEqual(40);
+  expect(batch.length).toBe(31);
 
   const ids = new Set();
   for (const audio of batch) {
@@ -21,6 +20,9 @@ test('adds all practice tracks from the Oct 2026 Drive folder batch', () => {
     expect(typeof audio.paliTitle).toBe('string');
     expect(typeof audio.speaker).toBe('string');
     expect(typeof audio.subtitle).toBe('string');
+    expect(/M4A/i.test(audio.id)).toBe(false);
+    expect(/M4A/i.test(audio.title)).toBe(false);
+    expect(/M4A/i.test(audio.paliTitle)).toBe(false);
     expect(audio.file.startsWith(DRIVE_URL_PREFIX)).toBe(true);
     expect(audio.file.endsWith(DRIVE_URL_SUFFIX)).toBe(true);
     const fileId = audio.file.slice(
