@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StatusBar, StyleSheet, View} from 'react-native';
+import {BackHandler, StatusBar, StyleSheet, View} from 'react-native';
 import {AppHeader} from './components/AppHeader';
 import {BottomTabs} from './components/BottomTabs';
 import {TAB_IDS} from './tabs';
@@ -32,7 +32,7 @@ function tabFromRoute(route) {
 }
 
 export function AppNavigator() {
-  const {ready, route, openTab} = useApp();
+  const {ready, route, openTab, goBack} = useApp();
   const colors = useColors();
   const {styles} = useThemedStyles(createStyles);
   const [splashDone, setSplashDone] = useState(false);
@@ -41,6 +41,24 @@ export function AppNavigator() {
     const timer = setTimeout(() => setSplashDone(true), SPLASH_MS);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!ready || !splashDone) {
+      return;
+    }
+    const onBackPress = () => {
+      if (route.name !== 'tabs') {
+        goBack();
+        return true;
+      }
+      return false;
+    };
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress,
+    );
+    return () => subscription.remove();
+  }, [ready, splashDone, route.name, goBack]);
 
   if (!ready || !splashDone) {
     return <SplashScreen />;

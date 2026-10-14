@@ -5,7 +5,9 @@ import SoundPlayer from 'react-native-sound-player';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   audioFileExists,
+  cancelAudioDownload,
   deleteAudioDownload,
+  DownloadCancelledError,
   downloadAudio,
   filePlayUrl,
   localAudioPath,
@@ -482,7 +484,20 @@ export function AudioPlayerScreen({audioId}) {
   };
 
   const onDownloadPress = () => {
-    if (!canDownload || downloading) {
+    if (!canDownload) {
+      return;
+    }
+    if (downloading) {
+      openDialog({
+        variant: 'confirmCancel',
+        title: 'ဒေါင်းလုဒ် ပယ်ဖျက်မည်လား',
+        message: 'ဆောင်ရွက်နေသော ဒေါင်းလုဒ်ကို ရပ်ပြီး ဖိုင်အစကို ဖျက်မည်။',
+        confirmLabel: 'ပယ်ဖျက်မည်',
+        cancelLabel: 'ဆက်လုပ်မည်',
+        onConfirm: () => {
+          cancelAudioDownload(audio.id);
+        },
+      });
       return;
     }
     if (offlineReady) {
@@ -511,8 +526,11 @@ export function AudioPlayerScreen({audioId}) {
         setOfflineReady(true);
       })
       .catch(error => {
-        console.warn('[audio download]', audio.id, audio.file, error);
         setDownloadProgress(0);
+        if (error instanceof DownloadCancelledError) {
+          return;
+        }
+        console.warn('[audio download]', audio.id, audio.file, error);
         openDialog({
           variant: 'downloadFailed',
           title: 'ဒေါင်းလုဒ် မအောင်မြင်ပါ',
@@ -546,7 +564,11 @@ export function AudioPlayerScreen({audioId}) {
             ]}
             accessibilityRole="button"
             accessibilityLabel={
-              offlineReady ? 'ဒေါင်းလုဒ် ဖျက်ရန်' : 'အော့ဖ်လိုင်း သိမ်းရန်'
+              downloading
+                ? 'ဒေါင်းလုဒ် ပယ်ဖျက်ရန်'
+                : offlineReady
+                  ? 'ဒေါင်းလုဒ် ဖျက်ရန်'
+                  : 'အော့ဖ်လိုင်း သိမ်းရန်'
             }>
             {downloading ? (
               <DownloadWaveFill progress={downloadProgress} color={colors.blue} />

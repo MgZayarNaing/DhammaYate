@@ -6,6 +6,7 @@ import {myanmarFont} from '../theme';
 
 const VARIANT_ICON = {
   confirmDelete: 'trash-can-outline',
+  confirmCancel: 'close-circle-outline',
   deleteFailed: 'alert-circle-outline',
   downloadFailed: 'cloud-off-outline',
 };
@@ -21,14 +22,13 @@ export function AppDialog({
   onClose,
 }) {
   const {colors, styles} = useThemedStyles(createStyles);
-  const showCancel = variant === 'confirmDelete';
+  const asksConfirm = variant === 'confirmDelete' || variant === 'confirmCancel';
   const primaryLabel =
     confirmLabel ?? (variant === 'confirmDelete' ? 'ဖျက်မည်' : 'OK');
   const iconName = VARIANT_ICON[variant] ?? 'information-outline';
-  const destructive = variant === 'confirmDelete';
 
   const handlePrimary = () => {
-    if (variant === 'confirmDelete') {
+    if (asksConfirm) {
       onConfirm?.();
     }
     onClose?.();
@@ -39,17 +39,17 @@ export function AppDialog({
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" />
       <View style={styles.center} pointerEvents="box-none">
         <View style={styles.card}>
-          <View style={[styles.iconWell, destructive && styles.iconWellDanger]}>
+          <View style={[styles.iconWell, asksConfirm && styles.iconWellDanger]}>
             <Icon
               name={iconName}
               size={28}
-              color={destructive ? colors.ink : colors.blue}
+              color={asksConfirm ? colors.ink : colors.blue}
             />
           </View>
           <Text style={styles.title}>{title}</Text>
           {message ? <Text style={styles.message}>{message}</Text> : null}
           <View style={styles.actions}>
-            {showCancel ? (
+            {asksConfirm ? (
               <Pressable
                 onPress={onClose}
                 style={styles.ghostBtn}
@@ -60,13 +60,13 @@ export function AppDialog({
             ) : null}
             <Pressable
               onPress={handlePrimary}
-              style={[styles.primaryBtn, destructive && styles.dangerBtn]}
+              style={[styles.primaryBtn, asksConfirm && styles.dangerBtn]}
               accessibilityRole="button"
               accessibilityLabel={primaryLabel}>
               <Text
                 style={[
                   styles.primaryText,
-                  destructive && styles.dangerText,
+                  asksConfirm && styles.dangerText,
                 ]}>
                 {primaryLabel}
               </Text>
