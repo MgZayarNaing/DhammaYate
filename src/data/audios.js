@@ -461,7 +461,7 @@ export const dhammaAudios = [
   },
   {
     id: "audio-metta",
-    title: "မေတ္တာသုတ် - အရှင်သုဇာတ (မေတ္တာအေးဆရာတော်)",
+    title: "မေတ္တာသုတ်",
     paliTitle: "မေတ္တာသုတ် - အရှင်သုဇာတ (မေတ္တာအေးဆရာတော်)",
     speaker: "အရှင်သုဇာတ (မေတ္တာအေးဆရာတော်)",
     category: "sutta",
