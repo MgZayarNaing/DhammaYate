@@ -22,7 +22,8 @@ test('bottom tabs match the requested sections', () => {
 
 test('includes sample audio talks', () => {
   expect(dhammaAudios.length).toBeGreaterThanOrEqual(6);
-  expect(getAudioById('audio-metta')?.title).toBe(
+  expect(getAudioById('audio-metta')?.title).toBe('မေတ္တာသုတ်');
+  expect(getAudioById('audio-metta')?.paliTitle).toBe(
     'မေတ္တာသုတ် - အရှင်သုဇာတ (မေတ္တာအေးဆရာတော်)',
   );
 });

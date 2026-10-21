@@ -3,11 +3,14 @@ jest.mock('@dr.pogodin/react-native-fs', () => ({
   downloadFile: jest.fn(() => ({promise: Promise.resolve({statusCode: 200})})),
   exists: jest.fn(async () => false),
   mkdir: jest.fn(async () => {}),
+  stopDownload: jest.fn(),
   unlink: jest.fn(async () => {}),
 }));
 
-import {downloadFile, exists, unlink} from '@dr.pogodin/react-native-fs';
+import {downloadFile, stopDownload, unlink} from '@dr.pogodin/react-native-fs';
 import {
+  cancelAudioDownload,
+  DownloadCancelledError,
   downloadAudio,
   filePlayUrl,
   localAudioPath,
@@ -26,6 +29,7 @@ test('player urls use the file scheme', () => {
 });
 
 test('failed download does not keep a partial file', async () => {
+  const {exists} = require('@dr.pogodin/react-native-fs');
   exists.mockResolvedValueOnce(true);
   downloadFile.mockReturnValueOnce({
     promise: Promise.resolve({statusCode: 404}),
@@ -37,6 +41,7 @@ test('failed download does not keep a partial file', async () => {
 });
 
 test('reports download progress ratios', async () => {
+  const {exists} = require('@dr.pogodin/react-native-fs');
   exists.mockResolvedValueOnce(true);
   downloadFile.mockImplementationOnce(options => {
     options.progress({bytesWritten: 50, contentLength: 100});
@@ -56,6 +61,7 @@ test('reports download progress ratios', async () => {
 });
 
 test('skips progress when content length is unknown', async () => {
+  const {exists} = require('@dr.pogodin/react-native-fs');
   exists.mockResolvedValueOnce(true);
   downloadFile.mockImplementationOnce(options => {
     options.progress({bytesWritten: 50, contentLength: 0});
@@ -68,4 +74,26 @@ test('skips progress when content length is unknown', async () => {
     ratio => ratios.push(ratio),
   );
   expect(ratios).toEqual([1]);
+});
+
+test('cancel stops the job and drops the partial file', async () => {
+  const {exists} = require('@dr.pogodin/react-native-fs');
+  exists.mockResolvedValue(true);
+  let rejectDownload;
+  downloadFile.mockImplementationOnce(() => ({
+    jobId: 7,
+    promise: new Promise((_, reject) => {
+      rejectDownload = reject;
+    }),
+  }));
+
+  const pending = downloadAudio('audio-mangala', 'https://example.com/a.mp3');
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+
+  await expect(cancelAudioDownload('audio-mangala')).resolves.toBe(true);
+  expect(stopDownload).toHaveBeenCalledWith(7);
+  rejectDownload(new Error('aborted'));
+  await expect(pending).rejects.toBeInstanceOf(DownloadCancelledError);
+  expect(unlink).toHaveBeenCalledWith('/mock/docs/audio/audio-mangala.mp3');
 });

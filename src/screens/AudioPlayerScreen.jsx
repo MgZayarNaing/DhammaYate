@@ -1,24 +1,19 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {
-  Alert,
-  Animated,
-  Easing,
-  Image,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import {Animated, Easing, Image, Pressable, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import SoundPlayer from 'react-native-sound-player';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   audioFileExists,
+  cancelAudioDownload,
   deleteAudioDownload,
+  DownloadCancelledError,
   downloadAudio,
   filePlayUrl,
   localAudioPath,
 } from '../audioFiles';
 import {AddToPlaylistModal} from '../components/PlaylistModals';
+import {AppDialog} from '../components/AppDialog';
 import {useApp} from '../context/AppContext';
 import {
   getAdjacentAudio,
@@ -162,6 +157,13 @@ export function AudioPlayerScreen({audioId}) {
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [localRevision, setLocalRevision] = useState(0);
+  const [dialog, setDialog] = useState(null);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const openDialog = payload => {
+    setDialog(payload);
+    setDialogVisible(true);
+  };
+  const closeDialog = () => setDialogVisible(false);
   const timerRef = useRef(null);
   const trackWidthRef = useRef(0);
   const scrubbingRef = useRef(false);
@@ -473,19 +475,42 @@ export function AudioPlayerScreen({audioId}) {
       setLocalRevision(value => value + 1);
     } catch (error) {
       console.warn('[audio delete]', audio.id, error);
-      Alert.alert('ဖျက်မရပါ', 'ဒေါင်းလုဒ်ဖိုင်ကို ဖျက်၍မရပါ။');
+      openDialog({
+        variant: 'deleteFailed',
+        title: 'ဖျက်မရပါ',
+        message: 'ဒေါင်းလုဒ်ဖိုင်ကို ဖျက်၍မရပါ။',
+      });
     }
   };
 
   const onDownloadPress = () => {
-    if (!canDownload || downloading) {
+    if (!canDownload) {
+      return;
+    }
+    if (downloading) {
+      openDialog({
+        variant: 'confirmCancel',
+        title: 'ဒေါင်းလုဒ် ပယ်ဖျက်မည်လား',
+        message: 'ဆောင်ရွက်နေသော ဒေါင်းလုဒ်ကို ရပ်ပြီး ဖိုင်အစကို ဖျက်မည်။',
+        confirmLabel: 'ပယ်ဖျက်မည်',
+        cancelLabel: 'ဆက်လုပ်မည်',
+        onConfirm: () => {
+          cancelAudioDownload(audio.id);
+        },
+      });
       return;
     }
     if (offlineReady) {
-      Alert.alert('ဒေါင်းလုဒ် ဖျက်မည်လား', 'သိမ်းထားသော အသံဖိုင်ကို ဖျက်မည်။', [
-        {text: 'မလုပ်တော့', style: 'cancel'},
-        {text: 'ဖျက်မည်', style: 'destructive', onPress: () => removeDownload()},
-      ]);
+      openDialog({
+        variant: 'confirmDelete',
+        title: 'ဒေါင်းလုဒ် ဖျက်မည်လား',
+        message: 'သိမ်းထားသော အသံဖိုင်ကို ဖျက်မည်။',
+        confirmLabel: 'ဖျက်မည်',
+        cancelLabel: 'မလုပ်တော့',
+        onConfirm: () => {
+          removeDownload();
+        },
+      });
       return;
     }
     setDownloading(true);
@@ -501,11 +526,15 @@ export function AudioPlayerScreen({audioId}) {
         setOfflineReady(true);
       })
       .catch(error => {
-        console.warn('[audio download]', audio.id, audio.file, error);
         setDownloadProgress(0);
-        Alert.alert(
-          'ဒေါင်းလုဒ် မအောင်မြင်ပါ',
-        );
+        if (error instanceof DownloadCancelledError) {
+          return;
+        }
+        console.warn('[audio download]', audio.id, audio.file, error);
+        openDialog({
+          variant: 'downloadFailed',
+          title: 'ဒေါင်းလုဒ် မအောင်မြင်ပါ',
+        });
       })
       .finally(() => {
         setDownloading(false);
@@ -535,7 +564,11 @@ export function AudioPlayerScreen({audioId}) {
             ]}
             accessibilityRole="button"
             accessibilityLabel={
-              offlineReady ? 'ဒေါင်းလုဒ် ဖျက်ရန်' : 'အော့ဖ်လိုင်း သိမ်းရန်'
+              downloading
+                ? 'ဒေါင်းလုဒ် ပယ်ဖျက်ရန်'
+                : offlineReady
+                  ? 'ဒေါင်းလုဒ် ဖျက်ရန်'
+                  : 'အော့ဖ်လိုင်း သိမ်းရန်'
             }>
             {downloading ? (
               <DownloadWaveFill progress={downloadProgress} color={colors.blue} />
@@ -647,6 +680,16 @@ export function AudioPlayerScreen({audioId}) {
         visible={adding}
         audioId={audio.id}
         onClose={() => setAdding(false)}
+      />
+      <AppDialog
+        visible={dialogVisible}
+        variant={dialog?.variant ?? 'downloadFailed'}
+        title={dialog?.title ?? ''}
+        message={dialog?.message}
+        confirmLabel={dialog?.confirmLabel}
+        cancelLabel={dialog?.cancelLabel}
+        onConfirm={dialog?.onConfirm}
+        onClose={closeDialog}
       />
     </View>
   );
