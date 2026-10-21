@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "352399117606",
+    "project_id": "dhammayate-8d3ea",
+    "storage_bucket": "dhammayate-8d3ea.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:352399117606:android:7c5c44040610971279c5e7",
+        "android_client_info": {
+          "package_name": "com.oitmyanmar.dhammayate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_lvMWmN56s6nSeTgOoE3Howuq3v5TFec"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,9 @@
 /* eslint-env jest */
+jest.mock('@react-native-firebase/analytics', () => ({
+  getAnalytics: () => ({}),
+  setAnalyticsCollectionEnabled: () => Promise.resolve(),
+}));
+
 jest.mock('react-native-google-mobile-ads', () => {
   const React = require('react');
   const {View} = require('react-native');
