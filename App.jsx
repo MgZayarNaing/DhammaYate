@@ -4,11 +4,17 @@
  * @format
  */
 
+import {useEffect} from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import mobileAds from 'react-native-google-mobile-ads';
 import {AppNavigator} from './src/AppNavigator';
 import {AppProvider} from './src/context/AppContext';
 
 function App() {
+  useEffect(() => {
+    mobileAds().initialize();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <AppProvider>

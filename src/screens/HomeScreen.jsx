@@ -1,6 +1,7 @@
 import React from 'react';
 import {Pressable, ScrollView, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {HomeBannerAd} from '../components/HomeBannerAd';
 import {ListMark} from '../components/ListMark';
 import {useApp} from '../context/AppContext';
 import {dhammaBooks} from '../data/books';
@@ -35,6 +36,7 @@ export function HomeScreen() {
           ))}
         </View>
       </ScrollView>
+      <HomeBannerAd />
     </View>
   );
 }
