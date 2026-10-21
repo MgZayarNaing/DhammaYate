@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {AppState, BackHandler, StatusBar, StyleSheet, View} from 'react-native';
 import {AppHeader} from './components/AppHeader';
+import {HomeBannerAd} from './components/HomeBannerAd';
 import {ForceUpdateScreen} from './components/ForceUpdateScreen';
 import {BottomTabs} from './components/BottomTabs';
 import {TAB_IDS} from './tabs';
@@ -116,6 +117,7 @@ export function AppNavigator() {
     route.name === 'library' ||
     route.name === 'audioPlayer' ||
     route.name === 'playlist';
+  const showBanner = route.name !== 'reader' && route.name !== 'audioPlayer';
 
   return (
     <View style={styles.shell}>
@@ -171,6 +173,7 @@ export function AppNavigator() {
           </View>
         ) : null}
       </View>
+      {showBanner ? <HomeBannerAd /> : null}
       {hideTabs ? null : <BottomTabs active={tab} onChange={openTab} />}
       {route.name === 'audioPlayer' ? (
         <View style={StyleSheet.absoluteFill}>

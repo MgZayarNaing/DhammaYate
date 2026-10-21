@@ -8,10 +8,31 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
+# Firebase Apple SDK is Swift Package Manager only and needs dynamic frameworks.
+linkage = ENV['USE_FRAMEWORKS'] || 'dynamic'
+Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+use_frameworks! :linkage => linkage.to_sym
+
+# Google Mobile Ads is a static xcframework. Keep those pods static so
+# RNGoogleMobileAds can link GAD symbols inside a dynamic-framework build.
+pre_install do |installer|
+  Pod::Installer::Xcode::TargetValidator.send(
+    :define_method,
+    :verify_no_static_framework_transitive_dependencies
+  ) {}
+
+  static_pod_names = [
+    'Google-Mobile-Ads-SDK',
+    'GoogleUserMessagingPlatform',
+    'RNGoogleMobileAds',
+  ]
+  installer.pod_targets.each do |pod|
+    next unless static_pod_names.include?(pod.name)
+
+    def pod.build_type
+      Pod::BuildType.static_library
+    end
+  end
 end
 
 target 'dhammaapp' do
@@ -30,5 +51,30 @@ target 'dhammaapp' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # Xcode 26 only accepts deployment targets from 15.0 upward.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |build_config|
+        deployment_target = build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if deployment_target.nil? || deployment_target.to_f < 15.0
+          build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+        end
+        build_config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+      end
+
+      # Uploader.mm calls the MobileCoreServices C API. Dynamic frameworks
+      # no longer inherit that link from the app target.
+      if target.name == 'ReactNativeFs'
+        target.build_configurations.each do |build_config|
+          flags = build_config.build_settings['OTHER_LDFLAGS'] || ['$(inherited)']
+          flags = [flags] if flags.is_a?(String)
+          unless flags.any? { |flag| flag.to_s.include?('MobileCoreServices') }
+            flags << '-framework'
+            flags << 'MobileCoreServices'
+          end
+          build_config.build_settings['OTHER_LDFLAGS'] = flags
+        end
+      end
+    end
   end
 end

@@ -1,2 +1,5 @@
 export const HOME_BANNER_AD_UNIT_ID =
   'ca-app-pub-7212739063301359/5562325500';
+
+export const IOS_HOME_BANNER_AD_UNIT_ID =
+  'ca-app-pub-7212739063301359/5481279501';
