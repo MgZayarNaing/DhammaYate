@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {BackHandler, StatusBar, StyleSheet, View} from 'react-native';
+import {AppState, BackHandler, StatusBar, StyleSheet, View} from 'react-native';
 import {AppHeader} from './components/AppHeader';
+import {ForceUpdateScreen} from './components/ForceUpdateScreen';
 import {BottomTabs} from './components/BottomTabs';
 import {TAB_IDS} from './tabs';
 import {useColors} from './context/AppContext';
@@ -18,8 +19,10 @@ import {ReaderScreen} from './screens/ReaderScreen';
 import {SearchScreen} from './screens/SearchScreen';
 import {SettingsScreen} from './screens/SettingsScreen';
 import {SplashScreen} from './screens/SplashScreen';
+import {checkForceUpdate, startForceUpdate} from './forceUpdate';
 
 const SPLASH_MS = process.env.JEST_WORKER_ID ? 0 : 1800;
+const UPDATE_CHECK_MS = process.env.JEST_WORKER_ID ? 0 : 8000;
 
 function tabFromRoute(route) {
   if (route.name === 'tabs') {
@@ -36,6 +39,7 @@ export function AppNavigator() {
   const colors = useColors();
   const {styles} = useThemedStyles(createStyles);
   const [splashDone, setSplashDone] = useState(false);
+  const [updateRequired, setUpdateRequired] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setSplashDone(true), SPLASH_MS);
@@ -43,10 +47,42 @@ export function AppNavigator() {
   }, []);
 
   useEffect(() => {
-    if (!ready || !splashDone) {
+    let cancelled = false;
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
+        setUpdateRequired(current => (current === null ? false : current));
+      }
+    }, UPDATE_CHECK_MS);
+    checkForceUpdate().then(required => {
+      if (!cancelled) {
+        setUpdateRequired(required);
+      }
+    });
+    const subscription = AppState.addEventListener('change', state => {
+      if (state !== 'active') {
+        return;
+      }
+      checkForceUpdate().then(required => {
+        if (!cancelled) {
+          setUpdateRequired(required);
+        }
+      });
+    });
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+      subscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!ready || !splashDone || updateRequired === null) {
       return;
     }
     const onBackPress = () => {
+      if (updateRequired) {
+        return true;
+      }
       if (route.name !== 'tabs') {
         goBack();
         return true;
@@ -62,10 +98,14 @@ export function AppNavigator() {
       onBackPress,
     );
     return () => subscription.remove();
-  }, [ready, splashDone, route.name, route.tab, goBack, openTab]);
+  }, [ready, splashDone, updateRequired, route.name, route.tab, goBack, openTab]);
 
-  if (!ready || !splashDone) {
+  if (!ready || !splashDone || updateRequired === null) {
     return <SplashScreen />;
+  }
+
+  if (updateRequired) {
+    return <ForceUpdateScreen onUpdate={startForceUpdate} />;
   }
 
   const tab = tabFromRoute(route);
