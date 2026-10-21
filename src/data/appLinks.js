@@ -1,20 +1,18 @@
-import {Platform} from 'react-native';
-
 export const APP_NAME = 'DhammaYate';
 export const APP_VERSION = '1.0.0';
 export const ANDROID_PACKAGE = 'com.oitmyanmar.dhammayate';
 
 export const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
 export const MORE_APPS_URL =
-  'https://play.google.com/store/apps/developer?id=Dhammaapp';
-export const TELEGRAM_URL = 'https://t.me/dhammaapp';
+  'https://play.google.com/store/apps/dev?id=7008123049210363038';
+export const TELEGRAM_URL = 'https://t.me/oitmyanmar';
 
 export function storeUrl() {
   return PLAY_STORE_URL;
 }
 
 export function moreAppsUrl() {
-  return Platform.OS === 'ios' ? PLAY_STORE_URL : MORE_APPS_URL;
+  return MORE_APPS_URL;
 }
 
 export function shareMessage() {
