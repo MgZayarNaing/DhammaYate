@@ -11,13 +11,13 @@
 		725458347E6EDACF7549D94A /* Pods_dhammaapp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0DCF652F8B568F7FF468116 /* Pods_dhammaapp.framework */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		A11F0A112CA45674006654F4 /* NotoSansMyanmar-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A11F0A102CA45674006654F4 /* NotoSansMyanmar-Regular.ttf */; };
+		A11F0A132CA45674006654F5 /* NotoSansMyanmar-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A11F0A122CA45674006654F5 /* NotoSansMyanmar-Bold.ttf */; };
 		A1B2C3D42CA45674006654EE /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D32CA45674006654EE /* SceneDelegate.swift */; };
 		E02DF9AD5E4D1341FF16E2EE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		EB1D7048E22F425AD63AAAA4 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 43F1C68D23A6A1172CE834D3 /* FirebaseCore */; };
 		F17A0C2E2CA45674006654F1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F17A0C2D2CA45674006654F0 /* GoogleService-Info.plist */; };
 		F17A0C302CA45674006654F3 /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F17A0C2F2CA45674006654F2 /* MaterialCommunityIcons.ttf */; };
-		A11F0A112CA45674006654F4 /* NotoSansMyanmar-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A11F0A102CA45674006654F4 /* NotoSansMyanmar-Regular.ttf */; };
-		A11F0A132CA45674006654F5 /* NotoSansMyanmar-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A11F0A122CA45674006654F5 /* NotoSansMyanmar-Bold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,13 +29,13 @@
 		5709B34CF0A7D63546082F79 /* Pods-dhammaapp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dhammaapp.release.xcconfig"; path = "Target Support Files/Pods-dhammaapp/Pods-dhammaapp.release.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = dhammaapp/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = dhammaapp/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A11F0A102CA45674006654F4 /* NotoSansMyanmar-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "NotoSansMyanmar-Regular.ttf"; path = "dhammaapp/Fonts/NotoSansMyanmar-Regular.ttf"; sourceTree = "<group>"; };
+		A11F0A122CA45674006654F5 /* NotoSansMyanmar-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "NotoSansMyanmar-Bold.ttf"; path = "dhammaapp/Fonts/NotoSansMyanmar-Bold.ttf"; sourceTree = "<group>"; };
 		A1B2C3D32CA45674006654EE /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = dhammaapp/SceneDelegate.swift; sourceTree = "<group>"; };
 		B0DCF652F8B568F7FF468116 /* Pods_dhammaapp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_dhammaapp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F17A0C2D2CA45674006654F0 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "dhammaapp/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		F17A0C2F2CA45674006654F2 /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
-		A11F0A102CA45674006654F4 /* NotoSansMyanmar-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "NotoSansMyanmar-Regular.ttf"; path = "dhammaapp/Fonts/NotoSansMyanmar-Regular.ttf"; sourceTree = "<group>"; };
-		A11F0A122CA45674006654F5 /* NotoSansMyanmar-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "NotoSansMyanmar-Bold.ttf"; path = "dhammaapp/Fonts/NotoSansMyanmar-Bold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

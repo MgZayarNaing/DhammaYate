@@ -1,8 +1,7 @@
-import React from 'react';
-import {Modal, Pressable, Text, View} from 'react-native';
+import {Modal, Pressable, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {MmText} from './MmText';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {mmText, mmTextBold} from '../theme';
 
 const VARIANT_ICON = {
   confirmDelete: 'trash-can-outline',
@@ -46,8 +45,8 @@ export function AppDialog({
               color={asksConfirm ? colors.ink : colors.blue}
             />
           </View>
-          <Text style={styles.title}>{title}</Text>
-          {message ? <Text style={styles.message}>{message}</Text> : null}
+          <MmText style={styles.title}>{title}</MmText>
+          {message ? <MmText style={styles.message}>{message}</MmText> : null}
           <View style={styles.actions}>
             {asksConfirm ? (
               <Pressable
@@ -55,7 +54,7 @@ export function AppDialog({
                 style={styles.ghostBtn}
                 accessibilityRole="button"
                 accessibilityLabel={cancelLabel}>
-                <Text style={styles.ghostText}>{cancelLabel}</Text>
+                <MmText style={styles.ghostText}>{cancelLabel}</MmText>
               </Pressable>
             ) : null}
             <Pressable
@@ -63,13 +62,13 @@ export function AppDialog({
               style={[styles.primaryBtn, asksConfirm && styles.dangerBtn]}
               accessibilityRole="button"
               accessibilityLabel={primaryLabel}>
-              <Text
+              <MmText
                 style={[
                   styles.primaryText,
                   asksConfirm && styles.dangerText,
                 ]}>
                 {primaryLabel}
-              </Text>
+              </MmText>
             </Pressable>
           </View>
         </View>
@@ -116,14 +115,12 @@ function createStyles(colors) {
       backgroundColor: colors.scheme === 'dark' ? '#2a2222' : '#f3eeee',
     },
     title: {
-      ...mmTextBold,
       fontSize: 17,
       color: colors.ink,
       textAlign: 'center',
       marginBottom: 8,
     },
     message: {
-      ...mmText,
       fontSize: 14,
       lineHeight: 22,
       color: colors.muted,
@@ -149,7 +146,6 @@ function createStyles(colors) {
       paddingHorizontal: 12,
     },
     ghostText: {
-      ...mmTextBold,
       fontSize: 15,
       color: colors.muted,
     },
@@ -163,7 +159,6 @@ function createStyles(colors) {
       paddingHorizontal: 12,
     },
     primaryText: {
-      ...mmTextBold,
       fontSize: 15,
       color: colors.onAccent,
     },

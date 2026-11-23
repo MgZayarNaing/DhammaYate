@@ -1,11 +1,19 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {Pressable, ScrollView, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {AppDialog} from '../components/AppDialog';
 import {MmText} from '../components/MmText';
 import {useApp} from '../context/AppContext';
 import {getTextById} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
+import {isTtsSpeaking, speakText, stopTts, subscribeTts} from '../tts';
+import {
+  cancelMmsModelDownload,
+  downloadMmsModel,
+  isMmsModelReady,
+  TtsModelDownloadCancelledError,
+} from '../ttsModel';
 
 export function ReaderScreen({textId}) {
   const insets = useSafeAreaInsets();
@@ -14,10 +22,39 @@ export function ReaderScreen({textId}) {
   const text = getTextById(textId);
   const bookmarked = settings.bookmarks.includes(textId);
   const [progress, setProgress] = useState(0);
+  const [speaking, setSpeaking] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadRatio, setDownloadRatio] = useState(0);
+  const [ttsDialog, setTtsDialog] = useState(null);
+  const pendingSpeakRef = useRef(false);
+  const downloadAcceptedRef = useRef(false);
 
   useEffect(() => {
     markLastRead(textId);
   }, [markLastRead, textId]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeTts(event => {
+      if (event === 'start') {
+        setSpeaking(true);
+        return;
+      }
+      if (event === 'finish' || event === 'cancel' || event === 'error') {
+        setSpeaking(false);
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    stopTts();
+    setSpeaking(false);
+    pendingSpeakRef.current = false;
+    return () => {
+      stopTts();
+      cancelMmsModelDownload();
+    };
+  }, [textId]);
 
   const onScroll = event => {
     const {contentOffset, contentSize, layoutMeasurement} = event.nativeEvent;
@@ -28,6 +65,94 @@ export function ReaderScreen({textId}) {
     }
     setProgress(Math.min(1, Math.max(0, contentOffset.y / max)));
   };
+
+  const startSpeak = useCallback(async () => {
+    if (!text) {
+      return;
+    }
+    try {
+      await speakText([text.title, ...(text.paragraphs ?? [])]);
+    } catch (error) {
+      setSpeaking(false);
+      if (error?.code === 'MODEL_NOT_READY') {
+        pendingSpeakRef.current = true;
+        setTtsDialog({type: 'confirmDownload'});
+        return;
+      }
+      setTtsDialog({
+        type: 'error',
+        title: 'အသံဖတ်၍ မရပါ',
+        message: 'နောက်မှ ထပ်မံကြိုးစားပါ။',
+      });
+    }
+  }, [text]);
+
+  const runDownloadThenSpeak = useCallback(async () => {
+    setDownloading(true);
+    setDownloadRatio(0);
+    setTtsDialog({type: 'downloading', progress: 0});
+    try {
+      await downloadMmsModel(ratio => {
+        setDownloadRatio(ratio);
+        setTtsDialog({type: 'downloading', progress: ratio});
+      });
+      setTtsDialog(null);
+      setDownloading(false);
+      if (pendingSpeakRef.current) {
+        pendingSpeakRef.current = false;
+        await startSpeak();
+      }
+    } catch (error) {
+      setDownloading(false);
+      pendingSpeakRef.current = false;
+      if (error instanceof TtsModelDownloadCancelledError) {
+        setTtsDialog(null);
+        return;
+      }
+      setTtsDialog({
+        type: 'error',
+        title: 'ဒေါင်းလုဒ် မအောင်မြင်ပါ',
+        message: 'အင်တာနက်ချိတ်ဆက်မှုကို စစ်ဆေးပြီး ထပ်မံကြိုးစားပါ။',
+      });
+    }
+  }, [startSpeak]);
+
+  const toggleSpeak = useCallback(async () => {
+    if (!text) {
+      return;
+    }
+    if (downloading) {
+      return;
+    }
+    if (speaking || isTtsSpeaking()) {
+      await stopTts();
+      setSpeaking(false);
+      return;
+    }
+    const ready = await isMmsModelReady();
+    if (!ready) {
+      pendingSpeakRef.current = true;
+      setTtsDialog({type: 'confirmDownload'});
+      return;
+    }
+    await startSpeak();
+  }, [downloading, speaking, startSpeak, text]);
+
+  const closeDialog = useCallback(() => {
+    // AppDialog calls onClose after onConfirm; keep the downloading dialog.
+    if (downloadAcceptedRef.current) {
+      downloadAcceptedRef.current = false;
+      return;
+    }
+    if (ttsDialog?.type === 'downloading') {
+      cancelMmsModelDownload();
+      setDownloading(false);
+      pendingSpeakRef.current = false;
+    } else if (ttsDialog?.type === 'confirmDownload') {
+      pendingSpeakRef.current = false;
+    }
+    setTtsDialog(null);
+  }, [ttsDialog?.type]);
 
   if (!text) {
     return (
@@ -42,6 +167,7 @@ export function ReaderScreen({textId}) {
 
   const bodySize = settings.fontSize;
   const bodyLineHeight = Math.round(bodySize * 2.2);
+  const percent = Math.round((ttsDialog?.progress ?? downloadRatio) * 100);
 
   return (
     <View style={styles.screen}>
@@ -52,6 +178,17 @@ export function ReaderScreen({textId}) {
           </Pressable>
           <Pressable onPress={() => bumpFontSize(1)} hitSlop={8} accessibilityLabel="စာလုံးကြီး">
             <MmText style={styles.tool}>က+</MmText>
+          </Pressable>
+          <Pressable
+            onPress={toggleSpeak}
+            hitSlop={8}
+            disabled={downloading}
+            accessibilityLabel={speaking ? 'အသံရပ်ရန်' : 'အသံဖတ်ရန်'}>
+            <Icon
+              name={speaking ? 'stop' : downloading ? 'download' : 'volume-high'}
+              size={22}
+              color={downloading ? colors.muted : colors.ink}
+            />
           </Pressable>
           <Pressable
             onPress={() => toggleBookmark(text.id)}
@@ -82,6 +219,42 @@ export function ReaderScreen({textId}) {
           </MmText>
         ))}
       </ScrollView>
+      <AppDialog
+        visible={Boolean(ttsDialog)}
+        variant={ttsDialog?.type === 'confirmDownload' ? 'confirmCancel' : 'downloadFailed'}
+        title={
+          ttsDialog?.type === 'confirmDownload'
+            ? 'မြန်မာအသံ'
+            : ttsDialog?.type === 'downloading'
+              ? 'ဒေါင်းလုဒ်လုပ်နေသည်'
+              : ttsDialog?.title ?? ''
+        }
+        message={
+          ttsDialog?.type === 'confirmDownload'
+            ? 'ပထမအကြိမ် အသံဖတ်ရန် မြန်မာအသံ  (~114MB) ကို ဒေါင်းလုဒ်လုပ်ရန် လိုပါသည်။ ဒေါင်းလုဒ်ပြီးနောက် အော့ဖ်လိုင်း အသုံးပြုနိုင်ပါသည်။'
+            : ttsDialog?.type === 'downloading'
+              ? `မြန်မာအသံ ဒေါင်းလုဒ်လုပ်နေသည်… ${percent}%`
+              : ttsDialog?.message
+        }
+        confirmLabel={
+          ttsDialog?.type === 'confirmDownload'
+            ? 'ဒေါင်းလုဒ်'
+            : ttsDialog?.type === 'downloading'
+              ? 'ပယ်ဖျက်ရန်'
+              : 'OK'
+        }
+        cancelLabel="မလုပ်တော့"
+        onConfirm={
+          ttsDialog?.type === 'confirmDownload'
+            ? () => {
+                downloadAcceptedRef.current = true;
+                pendingSpeakRef.current = true;
+                runDownloadThenSpeak();
+              }
+            : undefined
+        }
+        onClose={closeDialog}
+      />
     </View>
   );
 }
