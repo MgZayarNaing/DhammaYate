@@ -5,7 +5,7 @@ import {TextCard} from '../components/TextCard';
 import {useApp} from '../context/AppContext';
 import {searchTexts} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText} from '../theme';
 
 export function LibraryScreen() {
   const {openReader, settings} = useApp();
@@ -65,7 +65,7 @@ function createStyles(colors) {
       marginBottom: 12,
     },
     search: {
-      fontFamily: myanmarFont,
+      ...mmText,
       backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.line,
@@ -84,7 +84,7 @@ function createStyles(colors) {
       height: 12,
     },
     empty: {
-      fontFamily: myanmarFont,
+      ...mmText,
       textAlign: 'center',
       color: colors.muted,
       marginTop: 32,

@@ -4,7 +4,7 @@ import {TextCard} from '../components/TextCard';
 import {useApp} from '../context/AppContext';
 import {getTextById} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText} from '../theme';
 
 export function FavoritesScreen() {
   const {settings, openReader} = useApp();
@@ -62,7 +62,7 @@ function createStyles(colors) {
       alignItems: 'center',
     },
     emptyTitle: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 18,
       color: colors.ink,
       textAlign: 'center',
@@ -70,7 +70,7 @@ function createStyles(colors) {
     },
     emptyBody: {
       marginTop: 8,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 14,
       color: colors.muted,
       textAlign: 'center',

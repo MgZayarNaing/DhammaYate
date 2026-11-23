@@ -1,7 +1,8 @@
 import React from 'react';
-import {Pressable, ScrollView, Text} from 'react-native';
+import {Pressable, ScrollView} from 'react-native';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {categories, myanmarFont} from '../theme';
+import {categories} from '../theme';
+import {MmText} from './MmText';
 
 export function CategoryChips({selected, onSelect}) {
   const {styles} = useThemedStyles(createStyles);
@@ -37,7 +38,7 @@ function Chip({label, active, onPress, styles}) {
       style={[styles.chip, active && styles.chipActive]}
       accessibilityRole="button"
       accessibilityState={{selected: active}}>
-      <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
+      <MmText style={[styles.label, active && styles.labelActive]}>{label}</MmText>
     </Pressable>
   );
 }
@@ -61,9 +62,9 @@ function createStyles(colors) {
       borderColor: colors.blue,
     },
     label: {
-      fontFamily: myanmarFont,
       fontSize: 13,
       color: colors.ink,
+      lineHeight: 24,
     },
     labelActive: {
       color: colors.onAccent,

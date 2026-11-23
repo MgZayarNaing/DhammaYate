@@ -3,7 +3,7 @@ import {Pressable, StatusBar, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 export function ForceUpdateScreen({onUpdate}) {
   const insets = useSafeAreaInsets();
@@ -47,15 +47,14 @@ function createStyles(colors) {
     },
     title: {
       marginTop: 18,
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 28,
-      fontWeight: '700',
       color: colors.ink,
       textAlign: 'center',
     },
     message: {
       marginTop: 12,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 16,
       lineHeight: 28,
       color: colors.muted,

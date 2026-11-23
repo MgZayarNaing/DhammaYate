@@ -2,7 +2,7 @@ import React from 'react';
 import {Pressable, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmTextBold} from '../theme';
 
 export function BookCover({book, onPress}) {
   const {colors, styles} = useThemedStyles(createStyles);
@@ -41,11 +41,10 @@ function createStyles(colors) {
       flex: 1,
     },
     title: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 17,
-      fontWeight: '700',
       color: colors.ink,
-      lineHeight: 28,
+      lineHeight: 34,
     },
     chevron: {
       marginLeft: 8,

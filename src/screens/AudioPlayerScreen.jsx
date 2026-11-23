@@ -12,8 +12,9 @@ import {
   filePlayUrl,
   localAudioPath,
 } from '../audioFiles';
-import {AddToPlaylistModal} from '../components/PlaylistModals';
 import {AppDialog} from '../components/AppDialog';
+import {BackLink} from '../components/BackLink';
+import {AddToPlaylistModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
 import {
   getAdjacentAudio,
@@ -22,7 +23,7 @@ import {
   resolvePlaylist,
 } from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 const HERO_SIZE = 240;
 const LOGO_SIZE = 240;
@@ -395,12 +396,7 @@ export function AudioPlayerScreen({audioId}) {
   if (!audio) {
     return (
       <View style={[styles.screen, {paddingTop: insets.top + 12}]}>
-        <Pressable onPress={goBack} hitSlop={12} accessibilityLabel="နောက်သို့">
-          <View style={styles.backRow}>
-            <Icon name="chevron-left" size={22} color={colors.ink} />
-            <Text style={styles.back}>နောက်</Text>
-          </View>
-        </Pressable>
+        <BackLink onPress={goBack} />
         <Text style={styles.missingText}>အသံဖိုင် မတွေ့ပါ။</Text>
       </View>
     );
@@ -548,12 +544,7 @@ export function AudioPlayerScreen({audioId}) {
         {paddingTop: insets.top + 8, paddingBottom: Math.max(insets.bottom, 20)},
       ]}>
       <View style={styles.topBar}>
-        <Pressable onPress={goBack} hitSlop={12} accessibilityLabel="နောက်သို့">
-          <View style={styles.backRow}>
-            <Icon name="chevron-left" size={22} color={colors.ink} />
-            <Text style={styles.back}>နောက်</Text>
-          </View>
-        </Pressable>
+        <BackLink onPress={goBack} />
         {canDownload ? (
           <Pressable
             onPress={onDownloadPress}
@@ -712,17 +703,6 @@ function createStyles(colors) {
       width: TOOL_BUTTON_SIZE,
       height: TOOL_BUTTON_SIZE,
     },
-    backRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginLeft: -6,
-    },
-    back: {
-      fontFamily: myanmarFont,
-      fontSize: 16,
-      fontWeight: '600',
-      color: colors.ink,
-    },
     toolButton: {
       width: TOOL_BUTTON_SIZE,
       height: TOOL_BUTTON_SIZE,
@@ -749,17 +729,16 @@ function createStyles(colors) {
       justifyContent: 'center',
     },
     count: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 13,
       color: colors.muted,
       marginBottom: 8,
     },
     title: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 20,
-      fontWeight: '700',
       color: colors.ink,
-      lineHeight: 38,
+      lineHeight: 40,
       textAlign: 'center',
       paddingHorizontal: 8,
     },
@@ -861,7 +840,7 @@ function createStyles(colors) {
     },
     missingText: {
       marginTop: 24,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 16,
       color: colors.ink,
     },

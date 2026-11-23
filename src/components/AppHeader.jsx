@@ -1,14 +1,14 @@
 import React from 'react';
-import {Pressable, Text, View} from 'react-native';
+import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {APP_NAME} from '../data/appLinks';
 import {getAudioById, resolvePlaylist} from '../data/audios';
 import {getBookById} from '../data/books';
 import {getTextById} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {BackLink} from './BackLink';
+import {MmText} from './MmText';
 
 function headerState(route, openTab, goBack, settings) {
   if (route.name === 'tabs' && route.tab === 'home') {
@@ -76,28 +76,21 @@ function headerState(route, openTab, goBack, settings) {
 export function AppHeader() {
   const insets = useSafeAreaInsets();
   const {route, goBack, openTab, settings} = useApp();
-  const {colors, styles} = useThemedStyles(createStyles);
+  const {styles} = useThemedStyles(createStyles);
   const header = headerState(route, openTab, goBack, settings);
 
   return (
     <View style={[styles.bar, {paddingTop: insets.top + 10}]}>
       {header.mode === 'brand' ? (
-        <Text style={styles.brand}>{APP_NAME}</Text>
+        <MmText style={styles.brand}>{APP_NAME}</MmText>
       ) : (
         <View style={styles.row}>
-          <Pressable
-            onPress={header.onBack}
-            style={styles.side}
-            hitSlop={12}
-            accessibilityLabel="နောက်သို့">
-            <View style={styles.backRow}>
-              <Icon name="chevron-left" size={22} color={colors.ink} />
-              <Text style={styles.back}>နောက်</Text>
-            </View>
-          </Pressable>
-          <Text style={styles.title} numberOfLines={1}>
+          <View style={styles.side}>
+            <BackLink onPress={header.onBack} />
+          </View>
+          <MmText style={styles.title} numberOfLines={2}>
             {header.title}
-          </Text>
+          </MmText>
           <View style={styles.side} />
         </View>
       )}
@@ -115,40 +108,25 @@ function createStyles(colors) {
       borderBottomColor: colors.line,
     },
     brand: {
-      fontFamily: myanmarFont,
       fontSize: 22,
-      fontWeight: '700',
       color: colors.ink,
       textAlign: 'center',
-      lineHeight: 32,
+      lineHeight: 40,
     },
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      minHeight: 32,
+      minHeight: 40,
     },
     side: {
       width: 72,
     },
-    backRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginLeft: -6,
-    },
-    back: {
-      fontFamily: myanmarFont,
-      fontSize: 16,
-      fontWeight: '600',
-      color: colors.ink,
-    },
     title: {
       flex: 1,
-      fontFamily: myanmarFont,
       fontSize: 17,
-      fontWeight: '700',
       color: colors.ink,
       textAlign: 'center',
-      lineHeight: 26,
+      lineHeight: 34,
     },
   };
 }

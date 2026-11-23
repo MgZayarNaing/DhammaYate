@@ -1,11 +1,11 @@
-import React, {useEffect, useState} from 'react';
-import {Pressable, ScrollView, Text, View} from 'react-native';
+import {useEffect, useState} from 'react';
+import {Pressable, ScrollView, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {MmText} from '../components/MmText';
 import {useApp} from '../context/AppContext';
 import {getTextById} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
 
 export function ReaderScreen({textId}) {
   const insets = useSafeAreaInsets();
@@ -32,23 +32,26 @@ export function ReaderScreen({textId}) {
   if (!text) {
     return (
       <View style={styles.missing}>
-        <Text style={styles.missingText}>စာမတွေ့ပါ။</Text>
+        <MmText style={styles.missingText}>စာမတွေ့ပါ။</MmText>
         <Pressable onPress={goBack}>
-          <Text style={styles.backLink}>ပြန်သွားရန်</Text>
+          <MmText style={styles.backLink}>ပြန်သွားရန်</MmText>
         </Pressable>
       </View>
     );
   }
+
+  const bodySize = settings.fontSize;
+  const bodyLineHeight = Math.round(bodySize * 2.2);
 
   return (
     <View style={styles.screen}>
       <View style={styles.topBar}>
         <View style={styles.tools}>
           <Pressable onPress={() => bumpFontSize(-1)} hitSlop={8} accessibilityLabel="စာလုံးသေး">
-            <Text style={styles.tool}>က-</Text>
+            <MmText style={styles.tool}>က-</MmText>
           </Pressable>
           <Pressable onPress={() => bumpFontSize(1)} hitSlop={8} accessibilityLabel="စာလုံးကြီး">
-            <Text style={styles.tool}>က+</Text>
+            <MmText style={styles.tool}>က+</MmText>
           </Pressable>
           <Pressable
             onPress={() => toggleBookmark(text.id)}
@@ -69,20 +72,14 @@ export function ReaderScreen({textId}) {
         onScroll={onScroll}
         scrollEventThrottle={16}
         contentContainerStyle={[styles.body, {paddingBottom: insets.bottom + 40}]}>
-        <Text style={styles.title}>{text.title}</Text>
-        <Text style={styles.subtitle}>{text.subtitle}</Text>
+        <MmText style={styles.title}>{text.title}</MmText>
+        <MmText style={styles.subtitle}>{text.subtitle}</MmText>
         {text.paragraphs.map((paragraph, index) => (
-          <Text
+          <MmText
             key={`${text.id}-${index}`}
-            style={[
-              styles.paragraph,
-              {
-                fontSize: settings.fontSize,
-                lineHeight: Math.round(settings.fontSize * 1.85),
-              },
-            ]}>
+            style={[styles.paragraph, {fontSize: bodySize, lineHeight: bodyLineHeight}]}>
             {paragraph}
-          </Text>
+          </MmText>
         ))}
       </ScrollView>
     </View>
@@ -112,12 +109,7 @@ function createStyles(colors) {
       gap: 16,
     },
     tool: {
-      fontFamily: myanmarFont,
       fontSize: 16,
-      fontWeight: '600',
-      color: colors.ink,
-    },
-    starOn: {
       color: colors.ink,
     },
     progressTrack: {
@@ -134,22 +126,18 @@ function createStyles(colors) {
     },
     title: {
       marginTop: 0,
-      fontFamily: myanmarFont,
       fontSize: 28,
-      fontWeight: '700',
-      lineHeight: 42,
+      lineHeight: 52,
       color: colors.ink,
     },
     subtitle: {
       marginTop: 8,
       marginBottom: 8,
-      fontFamily: myanmarFont,
       fontSize: 15,
-      lineHeight: 26,
+      lineHeight: 32,
       color: colors.muted,
     },
     paragraph: {
-      fontFamily: myanmarFont,
       marginTop: 16,
       color: colors.ink,
     },
@@ -160,15 +148,15 @@ function createStyles(colors) {
       paddingTop: 20,
     },
     missingText: {
-      fontFamily: myanmarFont,
       fontSize: 16,
       color: colors.ink,
+      lineHeight: 30,
     },
     backLink: {
       marginTop: 12,
-      fontFamily: myanmarFont,
       color: colors.ink,
       fontSize: 15,
+      lineHeight: 28,
     },
   };
 }

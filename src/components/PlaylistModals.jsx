@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {dhammaAudios} from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 export function CreatePlaylistModal({visible, onClose, onCreated, preselectedIds}) {
   const {createPlaylist} = useApp();
@@ -242,22 +242,20 @@ function createStyles(colors) {
       maxHeight: '80%',
     },
     heading: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 17,
-      fontWeight: '700',
       color: colors.ink,
       marginBottom: 12,
     },
     subheading: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 14,
-      fontWeight: '700',
       color: colors.ink,
       marginTop: 16,
       marginBottom: 4,
     },
     input: {
-      fontFamily: myanmarFont,
+      ...mmText,
       borderWidth: 1,
       borderColor: colors.line,
       borderRadius: 14,
@@ -277,14 +275,13 @@ function createStyles(colors) {
       paddingVertical: 6,
     },
     actionText: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 15,
       color: colors.muted,
     },
     actionStrong: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 15,
-      fontWeight: '700',
       color: colors.ink,
     },
     list: {
@@ -329,7 +326,7 @@ function createStyles(colors) {
     },
     rowTitle: {
       flex: 1,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 16,
       color: colors.ink,
     },
@@ -340,12 +337,12 @@ function createStyles(colors) {
       gap: 6,
     },
     rowMeta: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 13,
       color: colors.muted,
     },
     empty: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 14,
       color: colors.muted,
       paddingVertical: 12,

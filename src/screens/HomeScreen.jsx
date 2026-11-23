@@ -5,7 +5,7 @@ import {ListMark} from '../components/ListMark';
 import {useApp} from '../context/AppContext';
 import {dhammaBooks} from '../data/books';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmTextBold} from '../theme';
 
 export function HomeScreen() {
   const {openBook} = useApp();
@@ -70,11 +70,10 @@ function createStyles(colors) {
       flex: 1,
     },
     title: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 17,
-      fontWeight: '700',
       color: colors.ink,
-      lineHeight: 28,
+      lineHeight: 34,
     },
     chevron: {
       marginLeft: 8,

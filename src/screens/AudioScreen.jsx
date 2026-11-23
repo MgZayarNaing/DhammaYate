@@ -5,7 +5,7 @@ import {CreatePlaylistModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
 import {dhammaAudios, getAudioById, getDownloadsPlaylist} from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 export function AudioScreen() {
   const {openAudio, openPlaylist, settings} = useApp();
@@ -107,9 +107,8 @@ function createStyles(colors) {
     section: {
       marginTop: 8,
       marginBottom: 12,
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 16,
-      fontWeight: '700',
       color: colors.ink,
     },
     addLinkRow: {
@@ -118,13 +117,12 @@ function createStyles(colors) {
       gap: 4,
     },
     addLink: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 15,
-      fontWeight: '700',
       color: colors.ink,
     },
     hint: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 14,
       color: colors.muted,
       lineHeight: 24,
@@ -166,14 +164,13 @@ function createStyles(colors) {
     },
     title: {
       flex: 1,
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 17,
       color: colors.ink,
-      fontWeight: '700',
-      lineHeight: 28,
+      lineHeight: 34,
     },
     meta: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 13,
       color: colors.muted,
       marginRight: 8,

@@ -2,7 +2,7 @@ import React from 'react';
 import {StatusBar, Text, View, Image} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {APP_NAME} from '../data/appLinks';
-import {myanmarFont} from '../theme';
+import {mmTextBold} from '../theme';
 
 export function SplashScreen() {
   const insets = useSafeAreaInsets();
@@ -48,9 +48,8 @@ const styles = {
   },
   title: {
     marginTop: 20,
-    fontFamily: myanmarFont,
+    ...mmTextBold,
     fontSize: 32,
-    fontWeight: '700',
     color: '#111111',
     lineHeight: 52,
   },

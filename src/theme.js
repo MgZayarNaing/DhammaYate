@@ -1,5 +1,3 @@
-import {Platform} from 'react-native';
-
 const black = '#111111';
 const white = '#ffffff';
 const goldLight = '#c9a227';
@@ -56,11 +54,16 @@ export const FONT_SIZES = [16, 18, 20, 22, 24, 28];
 export const DEFAULT_FONT_SIZE = 20;
 export const DEFAULT_COLOR_SCHEME = 'light';
 
-export const myanmarFont = Platform.select({
-  ios: 'Myanmar MN',
-  android: undefined,
-  default: undefined,
+// Bundled Regular face only (PostScript / Android file base name).
+// Never use Bold or fontWeight — both break Myanmar stacks (င်္, ဋ္ဌ, …) on iOS.
+export const myanmarFont = 'NotoSansMyanmar-Regular';
+export const myanmarFontBold = myanmarFont;
+
+export const mmText = Object.freeze({
+  fontFamily: myanmarFont,
 });
+
+export const mmTextBold = mmText;
 
 export const categories = [
   {id: 'vandana', label: 'ရှိခိုး', emoji: '◉'},

@@ -41,6 +41,8 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialCommunityIcons.ttf</string>
+		<string>NotoSansMyanmar-Regular.ttf</string>
+		<string>NotoSansMyanmar-Bold.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

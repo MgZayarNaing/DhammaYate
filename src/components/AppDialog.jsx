@@ -2,7 +2,7 @@ import React from 'react';
 import {Modal, Pressable, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 const VARIANT_ICON = {
   confirmDelete: 'trash-can-outline',
@@ -116,15 +116,14 @@ function createStyles(colors) {
       backgroundColor: colors.scheme === 'dark' ? '#2a2222' : '#f3eeee',
     },
     title: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 17,
-      fontWeight: '700',
       color: colors.ink,
       textAlign: 'center',
       marginBottom: 8,
     },
     message: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 14,
       lineHeight: 22,
       color: colors.muted,
@@ -150,10 +149,9 @@ function createStyles(colors) {
       paddingHorizontal: 12,
     },
     ghostText: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 15,
       color: colors.muted,
-      fontWeight: '600',
     },
     primaryBtn: {
       flex: 1,
@@ -165,9 +163,8 @@ function createStyles(colors) {
       paddingHorizontal: 12,
     },
     primaryText: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 15,
-      fontWeight: '700',
       color: colors.onAccent,
     },
     dangerBtn: {

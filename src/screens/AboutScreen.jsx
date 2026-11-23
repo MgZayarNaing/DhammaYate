@@ -2,7 +2,7 @@ import React from 'react';
 import {ScrollView, Text, View} from 'react-native';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {APP_NAME, APP_VERSION} from '../data/appLinks';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 export function AboutScreen() {
   const {styles} = useThemedStyles(createStyles);
@@ -33,21 +33,20 @@ function createStyles(colors) {
       paddingBottom: 32,
     },
     name: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 28,
-      fontWeight: '700',
       color: colors.ink,
       lineHeight: 40,
     },
     version: {
       marginTop: 6,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 14,
       color: colors.muted,
     },
     body: {
       marginTop: 12,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 15,
       color: colors.muted,
       lineHeight: 26,
