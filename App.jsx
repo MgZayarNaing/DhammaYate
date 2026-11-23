@@ -4,11 +4,19 @@
  * @format
  */
 
+import {useEffect} from 'react';
+import {getAnalytics, setAnalyticsCollectionEnabled} from '@react-native-firebase/analytics';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import mobileAds from 'react-native-google-mobile-ads';
 import {AppNavigator} from './src/AppNavigator';
 import {AppProvider} from './src/context/AppContext';
 
 function App() {
+  useEffect(() => {
+    mobileAds().initialize();
+    setAnalyticsCollectionEnabled(getAnalytics(), true);
+  }, []);
+
   return (
     <SafeAreaProvider>
       <AppProvider>
