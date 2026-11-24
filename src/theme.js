@@ -68,10 +68,11 @@ export const mmTextBold = mmText;
 export const categories = [
   {id: 'vandana', label: 'ရှိခိုး', emoji: '◉'},
   {id: 'paritta', label: 'ပရိတ်', emoji: '✦'},
-  {id: 'guna', label: 'ဂုဏ်တော်', emoji: '☸'},
+  {id: 'guna', label: 'ဂုဏ်တော်', emoji: '❂'},
   {id: 'sutta', label: 'သုတ်', emoji: '✧'},
   {id: 'foundation', label: 'အခြေခံ', emoji: '◎'},
   {id: 'practice', label: 'ကျင့်စဉ်', emoji: '❀'},
   {id: 'parami', label: 'ပါရမီ', emoji: '✧'},
   {id: 'abhidhamma', label: 'အဘိဓမ္မာ', emoji: '◈'},
+  {id: 'tayar', label: 'တရားတော်', emoji: '⚘'},
 ];
