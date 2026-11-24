@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
+import {FlatList} from 'react-native';
 import {useApp} from '../src/context/AppContext';
 import {dhammaAudios} from '../src/data/audios';
 import {AudioScreen} from '../src/screens/AudioScreen';
@@ -25,12 +26,18 @@ test('shows playlists and audio in separate tabs', async () => {
     screen = ReactTestRenderer.create(<AudioScreen />);
   });
 
-  expect(screen.root.findByProps({accessibilityLabel: dhammaAudios[0].title})).toBeTruthy();
+  const audioList = screen.root.findByType(FlatList);
+  expect(audioList.props.data).toContain(dhammaAudios[0]);
 
   await ReactTestRenderer.act(async () => {
     screen.root.findAllByProps({accessibilityRole: 'tab'})[0].props.onPress();
   });
 
-  expect(screen.root.findByProps({accessibilityLabel: 'Morning'})).toBeTruthy();
-  expect(screen.root.findAllByProps({accessibilityLabel: dhammaAudios[0].title})).toHaveLength(0);
+  const playlistList = screen.root.findByType(FlatList);
+  expect(playlistList.props.data).toEqual([
+    {id: 'pl-morning', name: 'Morning', audioIds: [dhammaAudios[0].id]},
+  ]);
+  expect(playlistList.props.renderItem({item: playlistList.props.data[0]}).props.children[1].props.accessibilityLabel).toBe(
+    'Morning',
+  );
 });

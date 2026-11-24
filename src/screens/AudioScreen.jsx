@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from 'react';
-import {Pressable, ScrollView, View} from 'react-native';
+import {FlatList, Pressable, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CategoryChips} from '../components/CategoryChips';
 import {CreatePlaylistModal} from '../components/PlaylistModals';
@@ -56,6 +56,103 @@ export function AudioScreen() {
     return sortedAudios.filter(item => item.category === category);
   }, [category]);
 
+  const listData = activeTab === 'playlists' ? totalPlaylists : filteredAudios;
+  const listHeader =
+    activeTab === 'playlists' ? (
+      <>
+        <View style={styles.sectionRow}>
+          <MmText style={styles.section}>Playlist</MmText>
+          <Pressable
+            onPress={() => setCreating(true)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Playlist အသစ်">
+            <View style={styles.addLinkRow}>
+              <Icon name="plus" size={16} color={colors.ink} />
+              <MmText style={styles.addLink}>အသစ်</MmText>
+            </View>
+          </Pressable>
+        </View>
+        {playlists.length === 0 ? (
+          <MmText style={styles.hint}>Playlist အသစ်တွင် အသံဖိုင်များ ရွေးချယ်နိုင်သည်။</MmText>
+        ) : null}
+      </>
+    ) : (
+      <>
+        <View style={styles.sectionRow}>
+          <MmText style={[styles.section, styles.sectionFlush]}>အသံဖိုင်များ</MmText>
+          <MmText style={styles.sectionCount}>{filteredAudios.length} ပုဒ်</MmText>
+        </View>
+        <View style={styles.chipsWrap}>
+          <CategoryChips
+            selected={category}
+            onSelect={setCategory}
+            categoryIds={audioCategoryIds}
+            counts={categoryCounts}
+            contentContainerStyle={styles.chipsRow}
+          />
+        </View>
+      </>
+    );
+
+  const renderItem = ({item}) => {
+    if (activeTab === 'playlists') {
+      return (
+        <View style={styles.card}>
+          <Pressable
+            onPress={() => {
+              const first = item.audioIds.map(id => getAudioById(id)).find(Boolean);
+              if (first) {
+                openAudio(first.id, 'audio', item.id);
+              }
+            }}
+            style={({pressed}) => [styles.playBadge, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.name} All`}>
+            <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
+          </Pressable>
+          <Pressable
+            onPress={() => openPlaylist(item.id)}
+            style={({pressed}) => [styles.playlistBody, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel={item.name}>
+            <MmText style={styles.playlistTitle}>{item.name}</MmText>
+            <MmText style={styles.meta}>{item.audioIds.length} ပုဒ်</MmText>
+            <Icon name="chevron-right" size={22} color={colors.ink} />
+          </Pressable>
+        </View>
+      );
+    }
+
+    return (
+      <Pressable
+        onPress={() => openAudio(item.id, 'audio')}
+        style={({pressed}) => [styles.card, pressed && styles.pressed]}
+        accessibilityRole="button"
+        accessibilityLabel={item.title}>
+        <View style={styles.playBadge}>
+          <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
+        </View>
+        <View style={styles.audioBody}>
+          <MmText style={styles.audioTitle} numberOfLines={2}>
+            {item.title}
+          </MmText>
+          <MmText style={styles.subtitle} numberOfLines={1}>
+            {(category === 'all'
+              ? [categoryLabelById[item.category], item.speaker]
+              : [item.speaker]
+            )
+              .filter(Boolean)
+              .join(' · ')}
+          </MmText>
+        </View>
+        {downloaded.includes(item.id) ? (
+          <Icon name="check-circle-outline" size={18} color={colors.muted} />
+        ) : null}
+      </Pressable>
+    );
+  };
+
   return (
     <View style={styles.screen}>
       <View style={styles.tabBar}>
@@ -78,109 +175,24 @@ export function AudioScreen() {
           </MmText>
         </Pressable>
       </View>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {activeTab === 'playlists' ? (
-          <>
-            <View style={styles.sectionRow}>
-              <MmText style={styles.section}>Playlist</MmText>
-              <Pressable
-                onPress={() => setCreating(true)}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel="Playlist အသစ်">
-                <View style={styles.addLinkRow}>
-                  <Icon name="plus" size={16} color={colors.ink} />
-                  <MmText style={styles.addLink}>အသစ်</MmText>
-                </View>
-              </Pressable>
-            </View>
-            {playlists.length === 0 ? (
-              <MmText style={styles.hint}>Playlist အသစ်တွင် အသံဖိုင်များ ရွေးချယ်နိုင်သည်။</MmText>
-            ) : null}
-            {totalPlaylists.length > 0 ? (
-              <View style={styles.stack}>
-                {totalPlaylists.map(playlist => (
-                  <View key={playlist.id} style={styles.card}>
-                    <Pressable
-                      onPress={() => {
-                        const first = playlist.audioIds
-                          .map(id => getAudioById(id))
-                          .find(Boolean);
-                        if (first) {
-                          openAudio(first.id, 'audio', playlist.id);
-                        }
-                      }}
-                      style={({pressed}) => [styles.playBadge, pressed && styles.pressed]}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${playlist.name} All`}>
-                      <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
-                    </Pressable>
-                    <Pressable
-                      onPress={() => openPlaylist(playlist.id)}
-                      style={({pressed}) => [styles.playlistBody, pressed && styles.pressed]}
-                      accessibilityRole="button"
-                      accessibilityLabel={playlist.name}>
-                      <MmText style={styles.playlistTitle}>{playlist.name}</MmText>
-                      <MmText style={styles.meta}>{playlist.audioIds.length} ပုဒ်</MmText>
-                      <Icon name="chevron-right" size={22} color={colors.ink} />
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-            ) : null}
-          </>
-        ) : (
-          <>
-            <View style={styles.sectionRow}>
-              <MmText style={[styles.section, styles.sectionFlush]}>အသံဖိုင်များ</MmText>
-              <MmText style={styles.sectionCount}>{filteredAudios.length} ပုဒ်</MmText>
-            </View>
-            <View style={styles.chipsWrap}>
-              <CategoryChips
-                selected={category}
-                onSelect={setCategory}
-                categoryIds={audioCategoryIds}
-                counts={categoryCounts}
-                contentContainerStyle={styles.chipsRow}
-              />
-            </View>
-            <View style={styles.stack}>
-              {filteredAudios.length === 0 ? (
-                <MmText style={styles.empty}>ဤအမျိုးအစားတွင် အသံဖိုင်မရှိပါ။</MmText>
-              ) : (
-                filteredAudios.map(item => (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => openAudio(item.id, 'audio')}
-                    style={({pressed}) => [styles.card, pressed && styles.pressed]}
-                    accessibilityRole="button"
-                    accessibilityLabel={item.title}>
-                    <View style={styles.playBadge}>
-                      <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
-                    </View>
-                    <View style={styles.audioBody}>
-                      <MmText style={styles.audioTitle} numberOfLines={2}>
-                        {item.title}
-                      </MmText>
-                      <MmText style={styles.subtitle} numberOfLines={1}>
-                        {(category === 'all'
-                          ? [categoryLabelById[item.category], item.speaker]
-                          : [item.speaker]
-                        )
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </MmText>
-                    </View>
-                    {downloaded.includes(item.id) ? (
-                      <Icon name="check-circle-outline" size={18} color={colors.muted} />
-                    ) : null}
-                  </Pressable>
-                ))
-              )}
-            </View>
-          </>
-        )}
-      </ScrollView>
+      <FlatList
+        key={activeTab}
+        data={listData}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={
+          activeTab === 'audio' ? (
+            <MmText style={styles.empty}>ဤအမျိုးအစားတွင် အသံဖိုင်မရှိပါ။</MmText>
+          ) : null
+        }
+        ItemSeparatorComponent={AudioListSeparator}
+        contentContainerStyle={styles.content}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={7}
+        showsVerticalScrollIndicator={false}
+      />
       <CreatePlaylistModal visible={creating} onClose={() => setCreating(false)} />
     </View>
   );
@@ -202,7 +214,7 @@ function createStyles(colors) {
       marginHorizontal: 20,
       marginTop: 8,
       marginBottom: 4,
-      padding: 4,
+      padding: 3,
       borderRadius: 14,
       backgroundColor: colors.parchment,
     },
@@ -211,7 +223,7 @@ function createStyles(colors) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 10,
+      paddingVertical: 7,
       borderRadius: 10,
     },
     tabActive: {
@@ -271,10 +283,6 @@ function createStyles(colors) {
       textAlign: 'center',
       paddingVertical: 24,
     },
-    stack: {
-      gap: 10,
-      marginBottom: 20,
-    },
     card: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -330,3 +338,9 @@ function createStyles(colors) {
     },
   };
 }
+
+function AudioListSeparator() {
+  return <View style={audioListSeparatorStyle} />;
+}
+
+const audioListSeparatorStyle = {height: 10};
