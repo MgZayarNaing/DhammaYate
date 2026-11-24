@@ -4,4 +4,5 @@ module.exports = {
       packageName: 'com.oitmyanmar.dhammayate',
     },
   },
+  assets: ['./src/assets/fonts/'],
 };

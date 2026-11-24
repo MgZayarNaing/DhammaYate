@@ -1,0 +1,26 @@
+diff --git a/node_modules/react-native-sherpa-onnx/ios/tts/sherpa-onnx-tts-wrapper.mm b/node_modules/react-native-sherpa-onnx/ios/tts/sherpa-onnx-tts-wrapper.mm
+index 31b15f5..ac42547 100644
+--- a/node_modules/react-native-sherpa-onnx/ios/tts/sherpa-onnx-tts-wrapper.mm
++++ b/node_modules/react-native-sherpa-onnx/ios/tts/sherpa-onnx-tts-wrapper.mm
+@@ -180,18 +180,9 @@
+                 return result;
+         }
+ 
+-        // Prevent hard native aborts from sherpa-onnx when phonemization data is missing.
+-        // Some VITS models require either espeak-ng-data or a lexicon. If both are missing,
+-        // fail gracefully so JS/UI can display a recoverable error instead of crashing.
+-        if (detect.selectedKind == TtsModelKind::kVits &&
+-            detect.paths.dataDir.empty() &&
+-            detect.paths.lexicon.empty()) {
+-            result.error =
+-                "TTS VITS init blocked: missing both espeak-ng-data and lexicon. "
+-                "Please add espeak-ng-data to the model folder or provide a lexicon.";
+-            LOGE("%s", result.error.c_str());
+-            return result;
+-        }
++        // MMS / character-frontend VITS models need only model.onnx + tokens.txt.
++        // Piper-style models that require lexicon/espeak will fail later in CreateOfflineTts
++        // with a native error; do not block character models here.
+ 
+         if (ruleFsts.has_value() && !ruleFsts->empty()) {
+             config.rule_fsts = *ruleFsts;

@@ -52,7 +52,7 @@ target 'dhammaapp' do
       # :ccache_enabled => true
     )
 
-    # Xcode 26 only accepts deployment targets from 15.0 upward.
+    # Xcode 26/27 only accepts deployment targets from 15.0 upward.
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |build_config|
         deployment_target = build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']

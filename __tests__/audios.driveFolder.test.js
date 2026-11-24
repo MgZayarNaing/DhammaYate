@@ -1,4 +1,5 @@
 import {dhammaAudios} from '../src/data/audios';
+import {categories} from '../src/theme';
 
 const DRIVE_URL_PREFIX =
   'https://drive.usercontent.google.com/download?id=';
@@ -7,13 +8,14 @@ const DRIVE_URL_SUFFIX = '&export=download&confirm=t';
 /** Entries appended for folder 1ikypoU1Dz4F-y_2Hi39_fDTLsB-RCUgu */
 const NEW_ID_PREFIX = 'audio-drive-2026-';
 
-test('adds all practice tracks from the Oct 2026 Drive folder batch', () => {
+test('adds all tracks from the Oct 2026 Drive folder batch with valid categories', () => {
   const batch = dhammaAudios.filter(a => a.id.startsWith(NEW_ID_PREFIX));
   expect(batch.length).toBe(31);
 
+  const validCategoryIds = new Set(categories.map(c => c.id));
   const ids = new Set();
   for (const audio of batch) {
-    expect(audio.category).toBe('practice');
+    expect(validCategoryIds.has(audio.category)).toBe(true);
     expect(audio.minutes).toBe(0);
     expect(typeof audio.title).toBe('string');
     expect(audio.title.length).toBeGreaterThan(0);

@@ -4,7 +4,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {tabs} from '../tabs';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 export function BottomTabs({active, onChange}) {
   const insets = useSafeAreaInsets();
@@ -56,15 +56,15 @@ function createStyles(colors) {
       paddingHorizontal: 2,
     },
     label: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 10,
-      lineHeight: 14,
+      lineHeight: 18,
       textAlign: 'center',
       color: colors.muted,
     },
     labelActive: {
       color: colors.ink,
-      fontWeight: '600',
+      ...mmTextBold,
     },
   };
 }

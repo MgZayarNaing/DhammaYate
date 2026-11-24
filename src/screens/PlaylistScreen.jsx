@@ -5,7 +5,7 @@ import {AddTracksModal} from '../components/PlaylistModals';
 import {useApp} from '../context/AppContext';
 import {DOWNLOADS_PLAYLIST_ID, getAudioById, resolvePlaylist} from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 export function PlaylistScreen({playlistId}) {
   const {settings, openAudio, deletePlaylist, removeFromPlaylist, goBack} = useApp();
@@ -143,9 +143,8 @@ function createStyles(colors) {
       gap: 6,
     },
     addButtonText: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 15,
-      fontWeight: '700',
       color: colors.ink,
     },
     playAll: {
@@ -161,9 +160,8 @@ function createStyles(colors) {
       marginLeft: 2,
     },
     playAllText: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 16,
-      fontWeight: '700',
       color: colors.onAccent,
     },
     row: {
@@ -195,17 +193,16 @@ function createStyles(colors) {
     },
     title: {
       flex: 1,
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 17,
       color: colors.ink,
-      fontWeight: '700',
-      lineHeight: 28,
+      lineHeight: 34,
     },
     pressed: {
       opacity: 0.75,
     },
     empty: {
-      fontFamily: myanmarFont,
+      ...mmText,
       textAlign: 'center',
       color: colors.muted,
       marginTop: 8,
@@ -218,7 +215,7 @@ function createStyles(colors) {
       paddingVertical: 12,
     },
     deleteText: {
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 15,
       color: colors.muted,
     },

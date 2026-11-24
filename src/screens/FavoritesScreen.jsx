@@ -4,7 +4,7 @@ import {TextCard} from '../components/TextCard';
 import {useApp} from '../context/AppContext';
 import {getTextById} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import { MmText } from '../components/MmText';
 
 export function FavoritesScreen() {
   const {settings, openReader} = useApp();
@@ -23,10 +23,10 @@ export function FavoritesScreen() {
         ItemSeparatorComponent={() => <View style={styles.sep} />}
         ListEmptyComponent={
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyTitle}>စိတ်ကြိုက်စာ မရှိသေးပါ</Text>
-            <Text style={styles.emptyBody}>
+            <MmText style={styles.emptyTitle}>စိတ်ကြိုက်စာ မရှိသေးပါ</MmText>
+            <MmText style={styles.emptyBody}>
               စာဖတ်နေစဉ် မှတ်သားခလုတ်ကို နှိပ်၍ နှစ်သက်သော တရားစာကို သိမ်းနိုင်သည်။
-            </Text>
+            </MmText>
           </View>
         }
         renderItem={({item}) => (
@@ -62,19 +62,15 @@ function createStyles(colors) {
       alignItems: 'center',
     },
     emptyTitle: {
-      fontFamily: myanmarFont,
       fontSize: 18,
       color: colors.ink,
       textAlign: 'center',
-      lineHeight: 30,
     },
     emptyBody: {
       marginTop: 8,
-      fontFamily: myanmarFont,
       fontSize: 14,
       color: colors.muted,
       textAlign: 'center',
-      lineHeight: 24,
     },
   };
 }

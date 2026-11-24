@@ -1,88 +1,198 @@
-import React, {useState} from 'react';
-import {Pressable, ScrollView, Text, View} from 'react-native';
+import React, {useMemo, useState} from 'react';
+import {FlatList, Pressable, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {CategoryChips} from '../components/CategoryChips';
 import {CreatePlaylistModal} from '../components/PlaylistModals';
+import {MmText} from '../components/MmText';
 import {useApp} from '../context/AppContext';
 import {dhammaAudios, getAudioById, getDownloadsPlaylist} from '../data/audios';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {categories} from '../theme';
+
+const categoryLabelById = Object.fromEntries(categories.map(c => [c.id, c.label]));
+const sortedAudios = [...dhammaAudios].sort((a, b) => a.sort - b.sort);
 
 export function AudioScreen() {
   const {openAudio, openPlaylist, settings} = useApp();
   const {colors, styles} = useThemedStyles(createStyles);
   const [creating, setCreating] = useState(false);
+  const [category, setCategory] = useState('all');
+  const [activeTab, setActiveTab] = useState('audio');
   const playlists = settings.playlists ?? [];
   const downloaded = settings.downloadedAudioIds ?? [];
   const downloadsPlaylist = getDownloadsPlaylist(downloaded);
   const totalPlaylists = [downloadsPlaylist, ...playlists].filter(Boolean);
 
-  return (
-    <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+  const audioCategoryIds = useMemo(() => {
+    const counts = {};
+    for (const item of dhammaAudios) {
+      if (item.category) {
+        counts[item.category] = (counts[item.category] || 0) + 1;
+      }
+    }
+    return categories
+      .map(c => c.id)
+      .filter(id => (counts[id] || 0) > 0)
+      .sort((a, b) => (counts[b] || 0) - (counts[a] || 0));
+  }, []);
+
+  const categoryCounts = useMemo(() => {
+    const counts = {all: dhammaAudios.length};
+    for (const id of audioCategoryIds) {
+      counts[id] = 0;
+    }
+    for (const item of dhammaAudios) {
+      if (counts[item.category] != null) {
+        counts[item.category] += 1;
+      }
+    }
+    return counts;
+  }, [audioCategoryIds]);
+
+  const filteredAudios = useMemo(() => {
+    if (category === 'all') {
+      return sortedAudios;
+    }
+    return sortedAudios.filter(item => item.category === category);
+  }, [category]);
+
+  const listData = activeTab === 'playlists' ? totalPlaylists : filteredAudios;
+  const listHeader =
+    activeTab === 'playlists' ? (
+      <>
         <View style={styles.sectionRow}>
-          <Text style={styles.section}>Playlist</Text>
-          <Pressable onPress={() => setCreating(true)} hitSlop={8} accessibilityLabel="Playlist အသစ်">
+          <MmText style={styles.section}>Playlist</MmText>
+          <Pressable
+            onPress={() => setCreating(true)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Playlist အသစ်">
             <View style={styles.addLinkRow}>
               <Icon name="plus" size={16} color={colors.ink} />
-              <Text style={styles.addLink}>အသစ်</Text>
+              <MmText style={styles.addLink}>အသစ်</MmText>
             </View>
           </Pressable>
         </View>
         {playlists.length === 0 ? (
-          <Text style={styles.hint}>Playlist အသစ်တွင် အသံဖိုင်များ ရွေးချယ်နိုင်သည်။</Text>
+          <MmText style={styles.hint}>Playlist အသစ်တွင် အသံဖိုင်များ ရွေးချယ်နိုင်သည်။</MmText>
         ) : null}
-        {totalPlaylists.length > 0 ? (
-          <View style={styles.stack}>
-            {totalPlaylists.map(playlist => (
-              <View key={playlist.id} style={styles.card}>
-                <Pressable
-                  onPress={() => {
-                    const first = playlist.audioIds
-                      .map(id => getAudioById(id))
-                      .find(Boolean);
-                    if (first) {
-                      openAudio(first.id, 'audio', playlist.id);
-                    }
-                  }}
-                  style={({pressed}) => [styles.playBadge, pressed && styles.pressed]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${playlist.name} All`}>
-                  <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
-                </Pressable>
-                <Pressable
-                  onPress={() => openPlaylist(playlist.id)}
-                  style={({pressed}) => [styles.playlistBody, pressed && styles.pressed]}
-                  accessibilityRole="button"
-                  accessibilityLabel={playlist.name}>
-                  <Text style={styles.title}>{playlist.name}</Text>
-                  <Text style={styles.meta}>{playlist.audioIds.length} ပုဒ်</Text>
-                  <Icon name="chevron-right" size={22} color={colors.ink} />
-                </Pressable>
-              </View>
-            ))}
-          </View>
-        ) : null}
-
-        <Text style={styles.section}>အသံဖိုင်များ</Text>
-        <View style={styles.stack}>
-          {dhammaAudios.map(item => (
-            <Pressable
-              key={item.id}
-              onPress={() => openAudio(item.id, 'audio')}
-              style={({pressed}) => [styles.card, pressed && styles.pressed]}
-              accessibilityRole="button"
-              accessibilityLabel={item.title}>
-              <View style={styles.playBadge}>
-                <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
-              </View>
-              <Text style={styles.title}>{item.title}</Text>
-              {downloaded.includes(item.id) ? (
-                <Icon name="cloud" size={18} color={colors.muted} />
-              ) : null}
-            </Pressable>
-          ))}
+      </>
+    ) : (
+      <>
+        <View style={styles.sectionRow}>
+          <MmText style={[styles.section, styles.sectionFlush]}>အသံဖိုင်များ</MmText>
+          <MmText style={styles.sectionCount}>{filteredAudios.length} ပုဒ်</MmText>
         </View>
-      </ScrollView>
+        <View style={styles.chipsWrap}>
+          <CategoryChips
+            selected={category}
+            onSelect={setCategory}
+            categoryIds={audioCategoryIds}
+            counts={categoryCounts}
+            contentContainerStyle={styles.chipsRow}
+          />
+        </View>
+      </>
+    );
+
+  const renderItem = ({item}) => {
+    if (activeTab === 'playlists') {
+      return (
+        <View style={styles.card}>
+          <Pressable
+            onPress={() => {
+              const first = item.audioIds.map(id => getAudioById(id)).find(Boolean);
+              if (first) {
+                openAudio(first.id, 'audio', item.id);
+              }
+            }}
+            style={({pressed}) => [styles.playBadge, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.name} All`}>
+            <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
+          </Pressable>
+          <Pressable
+            onPress={() => openPlaylist(item.id)}
+            style={({pressed}) => [styles.playlistBody, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel={item.name}>
+            <MmText style={styles.playlistTitle}>{item.name}</MmText>
+            <MmText style={styles.meta}>{item.audioIds.length} ပုဒ်</MmText>
+            <Icon name="chevron-right" size={22} color={colors.ink} />
+          </Pressable>
+        </View>
+      );
+    }
+
+    return (
+      <Pressable
+        onPress={() => openAudio(item.id, 'audio')}
+        style={({pressed}) => [styles.card, pressed && styles.pressed]}
+        accessibilityRole="button"
+        accessibilityLabel={item.title}>
+        <View style={styles.playBadge}>
+          <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
+        </View>
+        <View style={styles.audioBody}>
+          <MmText style={styles.audioTitle} numberOfLines={2}>
+            {item.title}
+          </MmText>
+          <MmText style={styles.subtitle} numberOfLines={1}>
+            {(category === 'all'
+              ? [categoryLabelById[item.category], item.speaker]
+              : [item.speaker]
+            )
+              .filter(Boolean)
+              .join(' · ')}
+          </MmText>
+        </View>
+        {downloaded.includes(item.id) ? (
+          <Icon name="check-circle-outline" size={18} color={colors.muted} />
+        ) : null}
+      </Pressable>
+    );
+  };
+
+  return (
+    <View style={styles.screen}>
+      <View style={styles.tabBar}>
+        <Pressable
+          onPress={() => setActiveTab('playlists')}
+          style={[styles.tab, activeTab === 'playlists' && styles.tabActive]}
+          accessibilityRole="tab"
+          accessibilityState={{selected: activeTab === 'playlists'}}>
+          <MmText style={[styles.tabLabel, activeTab === 'playlists' && styles.tabLabelActive]}>
+            Playlist
+          </MmText>
+        </Pressable>
+        <Pressable
+          onPress={() => setActiveTab('audio')}
+          style={[styles.tab, activeTab === 'audio' && styles.tabActive]}
+          accessibilityRole="tab"
+          accessibilityState={{selected: activeTab === 'audio'}}>
+          <MmText style={[styles.tabLabel, activeTab === 'audio' && styles.tabLabelActive]}>
+            အသံဖိုင်များ
+          </MmText>
+        </Pressable>
+      </View>
+      <FlatList
+        key={activeTab}
+        data={listData}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={
+          activeTab === 'audio' ? (
+            <MmText style={styles.empty}>ဤအမျိုးအစားတွင် အသံဖိုင်မရှိပါ။</MmText>
+          ) : null
+        }
+        ItemSeparatorComponent={AudioListSeparator}
+        contentContainerStyle={styles.content}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={7}
+        showsVerticalScrollIndicator={false}
+      />
       <CreatePlaylistModal visible={creating} onClose={() => setCreating(false)} />
     </View>
   );
@@ -96,8 +206,35 @@ function createStyles(colors) {
     },
     content: {
       paddingHorizontal: 20,
-      paddingTop: 16,
+      paddingTop: 8,
       paddingBottom: 28,
+    },
+    tabBar: {
+      flexDirection: 'row',
+      marginHorizontal: 20,
+      marginTop: 8,
+      marginBottom: 4,
+      padding: 3,
+      borderRadius: 14,
+      backgroundColor: colors.parchment,
+    },
+    tab: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 7,
+      borderRadius: 10,
+    },
+    tabActive: {
+      backgroundColor: colors.blue,
+    },
+    tabLabel: {
+      fontSize: 15,
+      color: colors.muted,
+    },
+    tabLabelActive: {
+      color: colors.onAccent,
     },
     sectionRow: {
       flexDirection: 'row',
@@ -107,10 +244,24 @@ function createStyles(colors) {
     section: {
       marginTop: 8,
       marginBottom: 12,
-      fontFamily: myanmarFont,
       fontSize: 16,
-      fontWeight: '700',
       color: colors.ink,
+    },
+    sectionFlush: {
+      marginBottom: 10,
+    },
+    sectionCount: {
+      fontSize: 13,
+      color: colors.muted,
+      marginBottom: 10,
+    },
+    chipsWrap: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.line,
+      marginBottom: 14,
+    },
+    chipsRow: {
+      paddingHorizontal: 0,
     },
     addLinkRow: {
       flexDirection: 'row',
@@ -118,21 +269,19 @@ function createStyles(colors) {
       gap: 4,
     },
     addLink: {
-      fontFamily: myanmarFont,
       fontSize: 15,
-      fontWeight: '700',
       color: colors.ink,
     },
     hint: {
-      fontFamily: myanmarFont,
       fontSize: 14,
       color: colors.muted,
-      lineHeight: 24,
       marginBottom: 8,
     },
-    stack: {
-      gap: 10,
-      marginBottom: 20,
+    empty: {
+      fontSize: 14,
+      color: colors.muted,
+      textAlign: 'center',
+      paddingVertical: 24,
     },
     card: {
       flexDirection: 'row',
@@ -152,6 +301,10 @@ function createStyles(colors) {
       flexDirection: 'row',
       alignItems: 'center',
     },
+    audioBody: {
+      flex: 1,
+      marginRight: 8,
+    },
     playBadge: {
       width: 40,
       height: 40,
@@ -164,19 +317,30 @@ function createStyles(colors) {
     playIcon: {
       marginLeft: 2,
     },
-    title: {
+    playlistTitle: {
       flex: 1,
-      fontFamily: myanmarFont,
       fontSize: 17,
       color: colors.ink,
-      fontWeight: '700',
-      lineHeight: 28,
+    },
+    audioTitle: {
+      fontSize: 17,
+      color: colors.ink,
+    },
+    subtitle: {
+      fontSize: 13,
+      color: colors.muted,
+      marginTop: 2,
     },
     meta: {
-      fontFamily: myanmarFont,
       fontSize: 13,
       color: colors.muted,
       marginRight: 8,
     },
   };
 }
+
+function AudioListSeparator() {
+  return <View style={audioListSeparatorStyle} />;
+}
+
+const audioListSeparatorStyle = {height: 10};

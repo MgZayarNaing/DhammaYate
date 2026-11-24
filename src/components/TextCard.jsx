@@ -1,9 +1,9 @@
 import React from 'react';
-import {Pressable, Text, View} from 'react-native';
+import {Pressable, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {categoryLabel} from '../data/texts';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {MmText} from './MmText';
 
 export function TextCard({text, onPress, bookmarked}) {
   const {colors, styles} = useThemedStyles(createStyles);
@@ -14,15 +14,15 @@ export function TextCard({text, onPress, bookmarked}) {
       style={({pressed}) => [styles.card, pressed && styles.pressed]}
       accessibilityRole="button"
       accessibilityLabel={text.title}>
-      <Text style={styles.category}>{categoryLabel[text.category]}</Text>
-      <Text style={styles.title}>{text.title}</Text>
-      <Text style={styles.subtitle} numberOfLines={2}>
+      <MmText style={styles.category}>{categoryLabel[text.category]}</MmText>
+      <MmText style={styles.title}>{text.title}</MmText>
+      <MmText style={styles.subtitle} numberOfLines={2}>
         {text.subtitle}
-      </Text>
+      </MmText>
       {bookmarked ? (
         <View style={styles.starRow}>
           <Icon name="bookmark-check" size={14} color={colors.blue} />
-          <Text style={styles.star}>မှတ်သားထားသည်</Text>
+          <MmText style={styles.star}>မှတ်သားထားသည်</MmText>
         </View>
       ) : null}
     </Pressable>
@@ -43,24 +43,20 @@ function createStyles(colors) {
     },
     category: {
       marginBottom: 8,
-      fontFamily: myanmarFont,
       fontSize: 12,
       color: colors.blue,
-      fontWeight: '600',
+      lineHeight: 22,
     },
     title: {
-      fontFamily: myanmarFont,
       fontSize: 20,
       color: colors.ink,
-      fontWeight: '700',
-      lineHeight: 32,
+      lineHeight: 40,
     },
     subtitle: {
       marginTop: 8,
-      fontFamily: myanmarFont,
       fontSize: 14,
       color: colors.cardMuted,
-      lineHeight: 24,
+      lineHeight: 28,
     },
     starRow: {
       marginTop: 10,
@@ -69,9 +65,9 @@ function createStyles(colors) {
       gap: 6,
     },
     star: {
-      fontFamily: myanmarFont,
       fontSize: 12,
       color: colors.blue,
+      lineHeight: 22,
     },
   };
 }

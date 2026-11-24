@@ -4,7 +4,7 @@ import {ListMark} from '../components/ListMark';
 import {useApp} from '../context/AppContext';
 import {getBookById} from '../data/books';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 export function BookChaptersScreen({bookId}) {
   const {openReader} = useApp();
@@ -70,11 +70,10 @@ function createStyles(colors) {
     },
     title: {
       flex: 1,
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 17,
-      fontWeight: '700',
       color: colors.ink,
-      lineHeight: 28,
+      lineHeight: 34,
     },
     chevron: {
       fontSize: 26,
@@ -83,7 +82,7 @@ function createStyles(colors) {
       marginLeft: 8,
     },
     empty: {
-      fontFamily: myanmarFont,
+      ...mmText,
       textAlign: 'center',
       color: colors.muted,
       marginTop: 32,

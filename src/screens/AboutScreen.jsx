@@ -1,8 +1,8 @@
-import React from 'react';
 import {ScrollView, Text, View} from 'react-native';
 import {useThemedStyles} from '../hooks/useThemedStyles';
 import {APP_NAME, APP_VERSION} from '../data/appLinks';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
+import { MmText } from '../components/MmText';
 
 export function AboutScreen() {
   const {styles} = useThemedStyles(createStyles);
@@ -10,12 +10,16 @@ export function AboutScreen() {
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.name}>{APP_NAME}</Text>
-        <Text style={styles.version}>Version {APP_VERSION}</Text>
-        <Text style={styles.body}>
+        <MmText style={styles.name}>{APP_NAME}</MmText>
+        <MmText style={styles.version}>Version {APP_VERSION}</MmText>
+        <MmText style={styles.body}>
           တရားစာကို အော့ဖ်လိုင်းဖတ်ရန်၊ အသံဖိုင်နာရန်နှင့် စိတ်ကြိုက်စာရင်း သိမ်းရန်
           ဖန်တီးထားသော အက်ပ်ဖြစ်သည်။
-        </Text>
+        </MmText>
+        <MmText style={styles.body}>
+          စာဖတ်စဉ် အသံဖတ်ခြင်းသည် Meta MMS Burmese (CC-BY-NC 4.0) မော်ဒယ်ကို sherpa-onnx
+          ဖြင့် အော့ဖ်လိုင်း အသုံးပြုသည်။
+        </MmText>
       </ScrollView>
     </View>
   );
@@ -33,24 +37,21 @@ function createStyles(colors) {
       paddingBottom: 32,
     },
     name: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 28,
-      fontWeight: '700',
       color: colors.ink,
-      lineHeight: 40,
     },
     version: {
       marginTop: 6,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 14,
       color: colors.muted,
     },
     body: {
       marginTop: 12,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 15,
       color: colors.muted,
-      lineHeight: 26,
     },
   };
 }

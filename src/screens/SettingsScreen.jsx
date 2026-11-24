@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {APP_VERSION, moreAppsUrl, shareMessage, storeUrl, TELEGRAM_URL} from '../data/appLinks';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {FONT_SIZES, myanmarFont} from '../theme';
+import {FONT_SIZES, mmText, mmTextBold} from '../theme';
 
 function openUrl(url) {
   Linking.openURL(url).catch(() => {});
@@ -145,9 +145,8 @@ function createStyles(colors) {
     section: {
       marginTop: 20,
       marginBottom: 10,
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 16,
-      fontWeight: '700',
       color: colors.ink,
     },
     toggleRow: {
@@ -160,14 +159,13 @@ function createStyles(colors) {
       flex: 1,
     },
     toggleTitle: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 16,
-      fontWeight: '700',
       color: colors.ink,
     },
     toggleHint: {
       marginTop: 4,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 13,
       color: colors.cardMuted,
     },
@@ -193,10 +191,9 @@ function createStyles(colors) {
       alignItems: 'center',
     },
     stepText: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 16,
       color: colors.ink,
-      fontWeight: '700',
     },
     value: {
       fontSize: 22,
@@ -247,9 +244,8 @@ function createStyles(colors) {
     },
     linkTitle: {
       flex: 1,
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 16,
-      fontWeight: '700',
       color: colors.ink,
     },
     pressed: {
@@ -258,7 +254,7 @@ function createStyles(colors) {
     version: {
       marginTop: 16,
       textAlign: 'center',
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 13,
       color: colors.muted,
     },

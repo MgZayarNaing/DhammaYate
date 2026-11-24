@@ -1,13 +1,14 @@
 import React from 'react';
-import {Pressable, StatusBar, Text, View} from 'react-native';
+import {Platform, Pressable, StatusBar, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 export function ForceUpdateScreen({onUpdate}) {
   const insets = useSafeAreaInsets();
   const {colors, styles} = useThemedStyles(createStyles);
+  const storeName = Platform.OS === 'ios' ? 'App Store' : 'Play Store';
 
   return (
     <View style={[styles.screen, {paddingBottom: Math.max(insets.bottom, 24)}]}>
@@ -19,7 +20,7 @@ export function ForceUpdateScreen({onUpdate}) {
         <Icon name="update" size={42} color={colors.ink} />
         <Text style={styles.title}>ဗားရှင်းအသစ် တင်ပါ</Text>
         <Text style={styles.message}>
-          ဆက်သုံးရန် Play Store မှာ ဗားရှင်းအသစ်ကို တင်ရန် လိုအပ်ပါသည်။
+          ဆက်သုံးရန် {storeName} မှ ဗားရှင်းအသစ်ကို တင်ရန် လိုအပ်ပါသည်။
         </Text>
         <Pressable
           onPress={onUpdate}
@@ -47,15 +48,14 @@ function createStyles(colors) {
     },
     title: {
       marginTop: 18,
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 28,
-      fontWeight: '700',
       color: colors.ink,
       textAlign: 'center',
     },
     message: {
       marginTop: 12,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 16,
       lineHeight: 28,
       color: colors.muted,

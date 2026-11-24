@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useApp} from '../context/AppContext';
 import {searchCatalog} from '../data/search';
 import {useThemedStyles} from '../hooks/useThemedStyles';
-import {myanmarFont} from '../theme';
+import {mmText, mmTextBold} from '../theme';
 
 const RESULT_KINDS = {
   book: {
@@ -191,7 +191,7 @@ function createStyles(colors) {
     },
     input: {
       flex: 1,
-      fontFamily: myanmarFont,
+      ...mmText,
       paddingVertical: 8,
       paddingHorizontal: 0,
       fontSize: 15,
@@ -226,22 +226,20 @@ function createStyles(colors) {
       flex: 1,
     },
     title: {
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 17,
-      fontWeight: '700',
       color: colors.ink,
-      lineHeight: 28,
+      lineHeight: 34,
     },
     kindLabel: {
       marginTop: 2,
-      fontFamily: myanmarFont,
+      ...mmTextBold,
       fontSize: 12,
-      fontWeight: '600',
       lineHeight: 20,
     },
     meta: {
       marginTop: 2,
-      fontFamily: myanmarFont,
+      ...mmText,
       fontSize: 13,
       color: colors.cardMuted,
       lineHeight: 22,
@@ -250,7 +248,7 @@ function createStyles(colors) {
       marginLeft: 8,
     },
     empty: {
-      fontFamily: myanmarFont,
+      ...mmText,
       textAlign: 'center',
       color: colors.muted,
       marginTop: 24,

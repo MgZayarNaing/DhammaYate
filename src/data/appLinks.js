@@ -1,8 +1,10 @@
 export const APP_NAME = 'DhammaYate';
 export const APP_VERSION = '1.0.2';
 export const ANDROID_PACKAGE = 'com.oitmyanmar.dhammayate';
+export const IOS_BUNDLE_ID = 'com.oitmyanmar.dhammayate';
 
 export const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
+export const APP_STORE_SEARCH_URL = 'https://apps.apple.com/search?term=DhammaYate';
 export const MORE_APPS_URL =
   'https://play.google.com/store/apps/dev?id=7008123049210363038';
 export const TELEGRAM_URL = 'https://t.me/oitmyanmar';

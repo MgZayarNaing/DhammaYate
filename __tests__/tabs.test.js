@@ -22,9 +22,9 @@ test('bottom tabs match the requested sections', () => {
 
 test('includes sample audio talks', () => {
   expect(dhammaAudios.length).toBeGreaterThanOrEqual(6);
-  expect(getAudioById('audio-metta')?.title).toBe('မေတ္တာသုတ်');
-  expect(getAudioById('audio-metta')?.paliTitle).toBe(
-    'မေတ္တာသုတ် - အရှင်သုဇာတ (မေတ္တာအေးဆရာတော်)',
+  expect(getAudioById('audio-myittasuta-minguansayadaw')?.title).toBe('မေတ္တာသုတ်');
+  expect(getAudioById('audio-myittasuta-minguansayadaw')?.paliTitle).toBe(
+    'မေတ္တာသုတ် - မင်းကွန်းဆရာတော်',
   );
 });
 
@@ -32,27 +32,39 @@ test('playlist queue stays in custom order', () => {
   const queue = getPlaylistQueue({
     id: 'pl-1',
     name: 'နံနက်',
-    audioIds: ['audio-mangala', 'audio-metta'],
+    audioIds: ['audio-yadanasuta-minguansayadaw', 'audio-myittasuta-minguansayadaw'],
   });
-  expect(queue.map(item => item.id)).toEqual(['audio-mangala', 'audio-metta']);
-  expect(getAdjacentAudio('audio-mangala', 1, queue)?.id).toBe('audio-metta');
+  expect(queue.map(item => item.id)).toEqual([
+    'audio-yadanasuta-minguansayadaw',
+    'audio-myittasuta-minguansayadaw',
+  ]);
+  expect(
+    getAdjacentAudio('audio-yadanasuta-minguansayadaw', 1, queue)?.id,
+  ).toBe('audio-myittasuta-minguansayadaw');
 });
 
 test('downloads playlist is derived from downloaded ids', () => {
   expect(getDownloadsPlaylist([])).toBeNull();
   expect(getDownloadsPlaylist(undefined)).toBeNull();
 
-  const playlist = getDownloadsPlaylist(['audio-metta', 'audio-mangala', 'missing']);
+  const playlist = getDownloadsPlaylist([
+    'audio-myittasuta-minguansayadaw',
+    'audio-yadanasuta-minguansayadaw',
+    'missing',
+  ]);
   expect(playlist).toEqual({
     id: DOWNLOADS_PLAYLIST_ID,
     name: 'ဒေါင်းလုဒ်',
-    audioIds: ['audio-metta', 'audio-mangala'],
+    audioIds: ['audio-myittasuta-minguansayadaw', 'audio-yadanasuta-minguansayadaw'],
   });
 
   expect(
     resolvePlaylist(DOWNLOADS_PLAYLIST_ID, {
-      downloadedAudioIds: ['audio-mangala', 'audio-metta'],
+      downloadedAudioIds: [
+        'audio-yadanasuta-minguansayadaw',
+        'audio-myittasuta-minguansayadaw',
+      ],
       playlists: [],
     })?.audioIds,
-  ).toEqual(['audio-mangala', 'audio-metta']);
+  ).toEqual(['audio-yadanasuta-minguansayadaw', 'audio-myittasuta-minguansayadaw']);
 });
