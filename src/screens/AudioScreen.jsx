@@ -17,6 +17,7 @@ export function AudioScreen() {
   const {colors, styles} = useThemedStyles(createStyles);
   const [creating, setCreating] = useState(false);
   const [category, setCategory] = useState('all');
+  const [activeTab, setActiveTab] = useState('audio');
   const playlists = settings.playlists ?? [];
   const downloaded = settings.downloadedAudioIds ?? [];
   const downloadsPlaylist = getDownloadsPlaylist(downloaded);
@@ -57,98 +58,128 @@ export function AudioScreen() {
 
   return (
     <View style={styles.screen}>
+      <View style={styles.tabBar}>
+        <Pressable
+          onPress={() => setActiveTab('playlists')}
+          style={[styles.tab, activeTab === 'playlists' && styles.tabActive]}
+          accessibilityRole="tab"
+          accessibilityState={{selected: activeTab === 'playlists'}}>
+          <MmText style={[styles.tabLabel, activeTab === 'playlists' && styles.tabLabelActive]}>
+            Playlist
+          </MmText>
+        </Pressable>
+        <Pressable
+          onPress={() => setActiveTab('audio')}
+          style={[styles.tab, activeTab === 'audio' && styles.tabActive]}
+          accessibilityRole="tab"
+          accessibilityState={{selected: activeTab === 'audio'}}>
+          <MmText style={[styles.tabLabel, activeTab === 'audio' && styles.tabLabelActive]}>
+            အသံဖိုင်များ
+          </MmText>
+        </Pressable>
+      </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.sectionRow}>
-          <MmText style={styles.section}>Playlist</MmText>
-          <Pressable onPress={() => setCreating(true)} hitSlop={8} accessibilityLabel="Playlist အသစ်">
-            <View style={styles.addLinkRow}>
-              <Icon name="plus" size={16} color={colors.ink} />
-              <MmText style={styles.addLink}>အသစ်</MmText>
-            </View>
-          </Pressable>
-        </View>
-        {playlists.length === 0 ? (
-          <MmText style={styles.hint}>Playlist အသစ်တွင် အသံဖိုင်များ ရွေးချယ်နိုင်သည်။</MmText>
-        ) : null}
-        {totalPlaylists.length > 0 ? (
-          <View style={styles.stack}>
-            {totalPlaylists.map(playlist => (
-              <View key={playlist.id} style={styles.card}>
-                <Pressable
-                  onPress={() => {
-                    const first = playlist.audioIds
-                      .map(id => getAudioById(id))
-                      .find(Boolean);
-                    if (first) {
-                      openAudio(first.id, 'audio', playlist.id);
-                    }
-                  }}
-                  style={({pressed}) => [styles.playBadge, pressed && styles.pressed]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${playlist.name} All`}>
-                  <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
-                </Pressable>
-                <Pressable
-                  onPress={() => openPlaylist(playlist.id)}
-                  style={({pressed}) => [styles.playlistBody, pressed && styles.pressed]}
-                  accessibilityRole="button"
-                  accessibilityLabel={playlist.name}>
-                  <MmText style={styles.playlistTitle}>{playlist.name}</MmText>
-                  <MmText style={styles.meta}>{playlist.audioIds.length} ပုဒ်</MmText>
-                  <Icon name="chevron-right" size={22} color={colors.ink} />
-                </Pressable>
-              </View>
-            ))}
-          </View>
-        ) : null}
-
-        <View style={styles.sectionRow}>
-          <MmText style={[styles.section, styles.sectionFlush]}>အသံဖိုင်များ</MmText>
-          <MmText style={styles.sectionCount}>{filteredAudios.length} ပုဒ်</MmText>
-        </View>
-        <View style={styles.chipsWrap}>
-          <CategoryChips
-            selected={category}
-            onSelect={setCategory}
-            categoryIds={audioCategoryIds}
-            counts={categoryCounts}
-            contentContainerStyle={styles.chipsRow}
-          />
-        </View>
-        <View style={styles.stack}>
-          {filteredAudios.length === 0 ? (
-            <MmText style={styles.empty}>ဤအမျိုးအစားတွင် အသံဖိုင်မရှိပါ။</MmText>
-          ) : (
-            filteredAudios.map(item => (
+        {activeTab === 'playlists' ? (
+          <>
+            <View style={styles.sectionRow}>
+              <MmText style={styles.section}>Playlist</MmText>
               <Pressable
-                key={item.id}
-                onPress={() => openAudio(item.id, 'audio')}
-                style={({pressed}) => [styles.card, pressed && styles.pressed]}
+                onPress={() => setCreating(true)}
+                hitSlop={8}
                 accessibilityRole="button"
-                accessibilityLabel={item.title}>
-                <View style={styles.playBadge}>
-                  <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
+                accessibilityLabel="Playlist အသစ်">
+                <View style={styles.addLinkRow}>
+                  <Icon name="plus" size={16} color={colors.ink} />
+                  <MmText style={styles.addLink}>အသစ်</MmText>
                 </View>
-                <View style={styles.audioBody}>
-                  <MmText style={styles.audioTitle} numberOfLines={2}>
-                    {item.title}
-                  </MmText>
-                  <MmText style={styles.subtitle} numberOfLines={1}>
-                    {(category === 'all'
-                      ? [categoryLabelById[item.category], item.speaker]
-                      : [item.speaker]
-                    )
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </MmText>
-                </View>
-                {downloaded.includes(item.id) ? (
-                  <Icon name="check-circle-outline" size={18} color={colors.muted} />
-                ) : null}
               </Pressable>
-            ))
-          )}
-        </View>
+            </View>
+            {playlists.length === 0 ? (
+              <MmText style={styles.hint}>Playlist အသစ်တွင် အသံဖိုင်များ ရွေးချယ်နိုင်သည်။</MmText>
+            ) : null}
+            {totalPlaylists.length > 0 ? (
+              <View style={styles.stack}>
+                {totalPlaylists.map(playlist => (
+                  <View key={playlist.id} style={styles.card}>
+                    <Pressable
+                      onPress={() => {
+                        const first = playlist.audioIds
+                          .map(id => getAudioById(id))
+                          .find(Boolean);
+                        if (first) {
+                          openAudio(first.id, 'audio', playlist.id);
+                        }
+                      }}
+                      style={({pressed}) => [styles.playBadge, pressed && styles.pressed]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${playlist.name} All`}>
+                      <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
+                    </Pressable>
+                    <Pressable
+                      onPress={() => openPlaylist(playlist.id)}
+                      style={({pressed}) => [styles.playlistBody, pressed && styles.pressed]}
+                      accessibilityRole="button"
+                      accessibilityLabel={playlist.name}>
+                      <MmText style={styles.playlistTitle}>{playlist.name}</MmText>
+                      <MmText style={styles.meta}>{playlist.audioIds.length} ပုဒ်</MmText>
+                      <Icon name="chevron-right" size={22} color={colors.ink} />
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <View style={styles.sectionRow}>
+              <MmText style={[styles.section, styles.sectionFlush]}>အသံဖိုင်များ</MmText>
+              <MmText style={styles.sectionCount}>{filteredAudios.length} ပုဒ်</MmText>
+            </View>
+            <View style={styles.chipsWrap}>
+              <CategoryChips
+                selected={category}
+                onSelect={setCategory}
+                categoryIds={audioCategoryIds}
+                counts={categoryCounts}
+                contentContainerStyle={styles.chipsRow}
+              />
+            </View>
+            <View style={styles.stack}>
+              {filteredAudios.length === 0 ? (
+                <MmText style={styles.empty}>ဤအမျိုးအစားတွင် အသံဖိုင်မရှိပါ။</MmText>
+              ) : (
+                filteredAudios.map(item => (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => openAudio(item.id, 'audio')}
+                    style={({pressed}) => [styles.card, pressed && styles.pressed]}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.title}>
+                    <View style={styles.playBadge}>
+                      <Icon name="play" size={16} color={colors.onAccent} style={styles.playIcon} />
+                    </View>
+                    <View style={styles.audioBody}>
+                      <MmText style={styles.audioTitle} numberOfLines={2}>
+                        {item.title}
+                      </MmText>
+                      <MmText style={styles.subtitle} numberOfLines={1}>
+                        {(category === 'all'
+                          ? [categoryLabelById[item.category], item.speaker]
+                          : [item.speaker]
+                        )
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </MmText>
+                    </View>
+                    {downloaded.includes(item.id) ? (
+                      <Icon name="check-circle-outline" size={18} color={colors.muted} />
+                    ) : null}
+                  </Pressable>
+                ))
+              )}
+            </View>
+          </>
+        )}
       </ScrollView>
       <CreatePlaylistModal visible={creating} onClose={() => setCreating(false)} />
     </View>
@@ -163,8 +194,35 @@ function createStyles(colors) {
     },
     content: {
       paddingHorizontal: 20,
-      paddingTop: 16,
+      paddingTop: 8,
       paddingBottom: 28,
+    },
+    tabBar: {
+      flexDirection: 'row',
+      marginHorizontal: 20,
+      marginTop: 8,
+      marginBottom: 4,
+      padding: 4,
+      borderRadius: 14,
+      backgroundColor: colors.parchment,
+    },
+    tab: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 10,
+      borderRadius: 10,
+    },
+    tabActive: {
+      backgroundColor: colors.blue,
+    },
+    tabLabel: {
+      fontSize: 15,
+      color: colors.muted,
+    },
+    tabLabelActive: {
+      color: colors.onAccent,
     },
     sectionRow: {
       flexDirection: 'row',
