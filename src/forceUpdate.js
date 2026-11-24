@@ -3,7 +3,11 @@ import SpInAppUpdates, {
   IAUAvailabilityStatus,
   IAUUpdateKind,
 } from 'sp-react-native-in-app-updates';
-import {storeUrl} from './data/appLinks';
+import {
+  APP_STORE_SEARCH_URL,
+  IOS_BUNDLE_ID,
+  storeUrl,
+} from './data/appLinks';
 
 let updates;
 
@@ -25,24 +29,43 @@ export function isUpdateRequired(result) {
 }
 
 export async function checkForceUpdate() {
-  if (Platform.OS !== 'android' || __DEV__) {
+  if ((Platform.OS !== 'android' && Platform.OS !== 'ios') || __DEV__) {
     return false;
   }
   try {
-    const result = await updateClient().checkNeedsUpdate({
-      curVersion: '0.0.0',
-      customVersionComparator: () => 1,
-    });
+    const checkOptions =
+      Platform.OS === 'ios'
+        ? {bundleId: IOS_BUNDLE_ID}
+        : {customVersionComparator: () => 1};
+    const result = await updateClient().checkNeedsUpdate(checkOptions);
     return isUpdateRequired(result);
-  } catch {
+  } catch (error) {
+    console.warn('[force update] version check failed', error);
     return false;
   }
 }
 
 export async function startForceUpdate() {
   try {
+    if (Platform.OS === 'ios') {
+      await updateClient().startUpdate({
+        bundleId: IOS_BUNDLE_ID,
+        forceUpgrade: true,
+        title: 'ဗားရှင်းအသစ် တင်ပါ',
+        message: 'ဆက်သုံးရန် App Store မှ ဗားရှင်းအသစ်ကို တင်ရန် လိုအပ်ပါသည်။',
+        buttonUpgradeText: 'App Store သို့သွားရန်',
+      });
+      return;
+    }
     await updateClient().startUpdate({updateType: IAUUpdateKind.IMMEDIATE});
-  } catch {
-    await Linking.openURL(storeUrl()).catch(() => {});
+  } catch (error) {
+    console.warn('[force update] update flow failed', error);
+    try {
+      await Linking.openURL(
+        Platform.OS === 'ios' ? APP_STORE_SEARCH_URL : storeUrl(),
+      );
+    } catch (fallbackError) {
+      console.warn('[force update] opening the store failed', fallbackError);
+    }
   }
 }
